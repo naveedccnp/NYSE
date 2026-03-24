@@ -1,0 +1,65 @@
+name: NTRT/MTRT Daily Screener
+
+# Runs twice daily on trading days (Mon–Fri):
+#   08:30 ET = catches BMO (before market open) earnings
+#   16:30 ET = catches AMC (after market close) earnings
+# All times in UTC (ET = UTC-5 in winter, UTC-4 in summer)
+# Using UTC-5 (EST) here — adjust by 1hr in summer (EDT)
+
+on:
+  schedule:
+    # 08:30 ET (13:30 UTC) — catches BMO earnings before US open
+    - cron: '30 13 * * 1-5'
+    # 16:30 ET (21:30 UTC) — catches AMC earnings after US close
+    - cron: '30 21 * * 1-5'
+
+  # Allow manual trigger for testing
+  workflow_dispatch:
+    inputs:
+      date:
+        description: 'Override date (YYYY-MM-DD) — leave blank for today'
+        required: false
+        default: ''
+      demo:
+        description: 'Insert demo data instead of live scan'
+        type: boolean
+        default: false
+
+jobs:
+  ntrt-scan:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run NTRT screener
+        env:
+          FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
+        run: |
+          ARGS=""
+          if [ "${{ github.event.inputs.date }}" != "" ]; then
+            ARGS="$ARGS --date ${{ github.event.inputs.date }}"
+          fi
+          if [ "${{ github.event.inputs.demo }}" == "true" ]; then
+            ARGS="$ARGS --demo"
+          fi
+          python ntrt_screener.py $ARGS
+
+      - name: Commit and push ntrt_data.json
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add ntrt_data.json
+          git diff --staged --quiet || git commit -m "chore: NTRT scan $(date -u '+%Y-%m-%d %H:%M UTC')"
+          git push
