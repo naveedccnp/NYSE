@@ -16,7 +16,7 @@ name: Deploy US-News Page (inject API keys)
 on:
   push:
     paths:
-      - 'us-news.html'
+      - 'news.html'
   workflow_dispatch:
 
 jobs:
@@ -29,14 +29,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Inject API keys into us-news.html
+      - name: Inject API keys into news.html
         env:
           FINNHUB_KEY:   ${{ secrets.FINNHUB_KEY }}
           MARKETAUX_KEY: ${{ secrets.MARKETAUX_KEY }}
         run: |
           # Replace placeholders with real keys
-          sed -i "s|%%FINNHUB_KEY%%|${FINNHUB_KEY}|g"   us-news.html
-          sed -i "s|%%MARKETAUX_KEY%%|${MARKETAUX_KEY}|g" us-news.html
+          sed -i "s|%%FINNHUB_KEY%%|${FINNHUB_KEY}|g"   news.html
+          sed -i "s|%%MARKETAUX_KEY%%|${MARKETAUX_KEY}|g" news.html
 
           # Verify replacement worked (will print key length, not the key itself)
           echo "FH key length:  $(echo -n "${FINNHUB_KEY}"   | wc -c)"
@@ -47,7 +47,7 @@ jobs:
             echo "ERROR: FINNHUB_KEY placeholder was not replaced — secret may be missing"
             exit 1
           fi
-          if grep -q '%%MARKETAUX_KEY%%' us-news.html; then
+          if grep -q '%%MARKETAUX_KEY%%' news.html; then
             echo "ERROR: MARKETAUX_KEY placeholder was not replaced — secret may be missing"
             exit 1
           fi
@@ -58,5 +58,5 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name  "github-actions[bot]"
           git add us-news.html
-          git diff --staged --quiet || git commit -m "deploy: inject API keys into us-news.html $(date -u '+%Y-%m-%d %H:%M UTC')"
+          git diff --staged --quiet || git commit -m "deploy: inject API keys into news.html $(date -u '+%Y-%m-%d %H:%M UTC')"
           git push
