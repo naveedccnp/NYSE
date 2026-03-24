@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NYSE · EP Screener</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root,[data-theme="dark"]{
+  --bg:#060a0e;--sf:#0b1017;--sf2:#0f1720;--sf3:#131e28;
+  --bd:#162030;--bd2:#1e2e42;--bd3:#263848;
+  --tx:#c8ddf0;--txd:#3a5870;--txm:#1a2e40;
+  --ac:#00c4e8;--ac2:#006688;--ac3:rgba(0,196,232,.12);
+  --gn:#00e676;--gnbg:#001f0d;--gnbr:#00e67630;
+  --rd:#ff4444;--rdbg:#1f0000;--rdbr:#ff444430;
+  --gd:#ffd040;--gdbg:#1f1400;--gdbr:#ffd04030;
+  --or:#ff9c20;--orbg:#1f1000;--orbr:#ff9c2030;
+  --pu:#b388ff;--pubg:#180d2e;--pubr:#b388ff30;
+  --hdr:rgba(6,10,14,0.97);--sl:rgba(0,0,0,0.08);
+  --go:#00e676;--go-bg:#001f0d;--go-br:#00e67640;
+  --nogo:#ff4444;--nogo-bg:#1f0000;--nogo-br:#ff444440;
+  --pend:#ffd040;--pend-bg:#1f1400;--pend-br:#ffd04040;
+}
+[data-theme="light"]{
+  --bg:#edf2f8;--sf:#fff;--sf2:#f4f8fc;--sf3:#eaf0f7;
+  --bd:#c4d4e8;--bd2:#a0bcd4;--bd3:#88a8c8;
+  --tx:#0a1828;--txd:#4a6a88;--txm:#88aac8;
+  --ac:#0077aa;--ac2:#005588;--ac3:rgba(0,119,170,.1);
+  --gn:#1a7a40;--gnbg:#e4f8ea;--gnbr:#1a7a4030;
+  --rd:#cc2222;--rdbg:#fde4e4;--rdbr:#cc222230;
+  --gd:#886000;--gdbg:#fff6d8;--gdbr:#88600030;
+  --or:#c66000;--orbg:#fff0d0;--orbr:#c6600030;
+  --pu:#7b22cc;--pubg:#efe8ff;--pubr:#7b22cc30;
+  --hdr:rgba(237,242,248,0.97);--sl:transparent;
+  --go:#1a7a40;--go-bg:#e4f8ea;--go-br:#1a7a4040;
+  --nogo:#cc2222;--nogo-bg:#fde4e4;--nogo-br:#cc222240;
+  --pend:#886000;--pend-bg:#fff6d8;--pend-br:#88600040;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--tx);font-family:'Syne',sans-serif;font-size:13px;line-height:1.5;min-height:100vh;transition:background .25s,color .25s}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,var(--sl) 3px,var(--sl) 4px);pointer-events:none;z-index:9999}
+header{position:sticky;top:0;z-index:200;height:52px;background:var(--hdr);border-bottom:1px solid var(--bd);backdrop-filter:blur(16px);display:flex;align-items:center;padding:0 20px;gap:12px}
+.logo{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--ac);letter-spacing:.1em;text-transform:uppercase;white-space:nowrap}
+.logo span{color:var(--txd);font-weight:400}
+.nav{display:flex;gap:2px;flex-wrap:wrap}
+.nl{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--txd);text-decoration:none;padding:4px 9px;border-radius:4px;border:1px solid transparent;transition:all .15s;white-space:nowrap}
+.nl:hover{color:var(--ac);border-color:var(--bd2)}
+.nl.on{color:var(--ac);background:rgba(0,196,232,.09);border-color:var(--ac2)}
+.hs{width:1px;height:22px;background:var(--bd);flex-shrink:0}
+.tog{display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--txd)}
+.tt{width:32px;height:18px;background:var(--bd);border-radius:9px;position:relative;border:1px solid var(--bd2)}
+.tk{position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:var(--txd);transition:transform .2s,background .2s}
+[data-theme="light"] .tk{transform:translateX(14px);background:var(--ac)}
+#upd-label{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--txd);white-space:nowrap}
+.page{padding:18px 20px 80px;max-width:1800px;margin:0 auto}
+.sec-title{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--txd);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.sec-title::after{content:'';flex:1;height:1px;background:var(--bd)}
+
+/* EP CRITERIA */
+.ep-crit-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+.ep-crit-group{background:var(--sf);border:1px solid var(--bd);border-radius:8px;padding:12px 14px}
+.ep-crit-hdr{font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ac);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--bd)}
+.ep-crit-item{display:flex;align-items:flex-start;gap:6px;padding:4px 0;border-bottom:1px solid var(--bd);font-size:11px;color:var(--txd);line-height:1.4}
+.ep-crit-item:last-child{border-bottom:none;padding-bottom:0}
+.dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.dot-gn{background:var(--gn)}.dot-or{background:var(--or)}.dot-rd{background:var(--rd)}.dot-gd{background:var(--gd)}.dot-ac{background:var(--ac)}
+
+/* SIP RESOURCES */
+.sip-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.sip-group{background:var(--sf);border:1px solid var(--bd);border-radius:8px;padding:12px 14px}
+.sip-group-hdr{font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ac);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--bd)}
+.sip-link{display:block;font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--txd);text-decoration:none;padding:3px 0;transition:color .12s;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sip-link:hover{color:var(--ac)}
+.sip-link::before{content:'↗ ';color:var(--bd3)}
+.sip-link:hover::before{color:var(--ac)}
+.tier1-tag{font-family:'JetBrains Mono',monospace;font-size:7px;padding:1px 4px;border-radius:3px;background:var(--gdbg);color:var(--gd);border:1px solid var(--gdbr);vertical-align:middle;margin-left:3px}
+
+/* WEEK NAV */
+.week-row{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.week-lbl{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--txd)}
+.week-input{font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--sf2);border:1px solid var(--bd2);border-radius:5px;color:var(--tx);padding:4px 8px}
+.week-input:focus{outline:none;border-color:var(--ac)}
+.week-btn{font-family:'JetBrains Mono',monospace;font-size:10px;padding:4px 10px;border-radius:5px;border:1px solid var(--bd2);background:var(--sf2);color:var(--txd);cursor:pointer;transition:all .15s}
+.week-btn:hover{color:var(--ac);border-color:var(--ac)}
+.save-badge{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--gn);opacity:0;transition:opacity .3s;padding:3px 8px;border-radius:4px;background:var(--gnbg);border:1px solid var(--gnbr)}
+.save-badge.show{opacity:1}
+
+/* BUCKETS */
+.bucket-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:28px}
+.bucket{border:1px solid var(--bd);border-radius:8px;background:var(--sf);overflow:hidden;transition:border-color .2s}
+.bucket:hover{border-color:var(--bd2)}
+.bucket-hdr{padding:8px 12px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;background:var(--sf2)}
+.bucket-day{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:var(--ac);letter-spacing:.06em;text-transform:uppercase}
+.bucket-date{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--txd)}
+.bucket-count{font-family:'JetBrains Mono',monospace;font-size:9px;padding:1px 6px;border-radius:3px;background:var(--ac3);color:var(--ac)}
+.bucket-input{width:100%;background:transparent;border:none;outline:none;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--tx);padding:8px 12px;resize:none;min-height:80px;transition:background .15s;border-bottom:1px solid var(--bd)}
+.bucket-input:focus{background:var(--sf2)}
+.bucket-input::placeholder{color:var(--txm)}
+.bucket-chips{padding:6px 10px;display:flex;flex-wrap:wrap;gap:4px;min-height:32px}
+.chip{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px;background:var(--sf3);color:var(--ac);border:1px solid var(--bd2);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:4px}
+.chip:hover,.chip.active{background:var(--ac3);border-color:var(--ac)}
+.chip .chip-x{color:var(--txd);font-size:9px}
+.chip:hover .chip-x{color:var(--rd)}
+.bucket-add-btn{width:100%;font-family:'JetBrains Mono',monospace;font-size:9.5px;padding:5px;background:transparent;border:none;border-top:1px solid var(--bd);color:var(--txd);cursor:pointer;transition:all .15s;text-align:center}
+.bucket-add-btn:hover{background:var(--sf2);color:var(--ac)}
+.bucket.today{border-color:var(--ac);box-shadow:0 0 0 1px var(--ac2)}
+.bucket.today .bucket-hdr{background:var(--ac3)}
+.bucket.today .bucket-day{color:var(--gn)}
+
+/* RESEARCH PANEL */
+.research-panel{border:1px solid var(--bd);border-radius:10px;background:var(--sf);overflow:hidden;margin-bottom:20px}
+.rp-hdr{padding:12px 16px;border-bottom:1px solid var(--bd);background:var(--sf2);display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.rp-sym{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:var(--ac);cursor:pointer;border-bottom:1px dashed var(--ac2);padding:1px 4px;border-radius:3px;transition:all .15s}
+.rp-sym:hover{color:#fff;background:var(--ac);border-bottom-color:transparent}
+.rp-day-tag{font-family:'JetBrains Mono',monospace;font-size:9px;padding:2px 7px;border-radius:4px;background:var(--sf3);color:var(--txd);border:1px solid var(--bd)}
+.rp-close{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:11px;padding:3px 9px;border-radius:5px;border:1px solid var(--bd2);background:var(--sf3);color:var(--txd);cursor:pointer;transition:all .15s}
+.rp-close:hover{color:var(--rd);border-color:var(--rd)}
+.magna-row{display:flex;gap:6px;flex-wrap:wrap;padding:10px 16px;border-bottom:1px solid var(--bd);background:var(--sf3)}
+.mg{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;padding:3px 9px;border-radius:5px;cursor:pointer;transition:all .15s;border:1px solid transparent}
+.mg.pending{background:var(--pend-bg);color:var(--pend);border-color:var(--pend-br)}
+.mg.go{background:var(--go-bg);color:var(--go);border-color:var(--go-br)}
+.mg.nogo{background:var(--nogo-bg);color:var(--nogo);border-color:var(--nogo-br)}
+.mg-verdict{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;padding:3px 12px;border-radius:5px}
+.mv-go{background:var(--go-bg);color:var(--go);border:1px solid var(--go-br)}
+.mv-nogo{background:var(--nogo-bg);color:var(--nogo);border:1px solid var(--nogo-br)}
+.mv-pend{background:var(--pend-bg);color:var(--pend);border:1px solid var(--pend-br)}
+.src-tabs{display:flex;border-bottom:1px solid var(--bd);background:var(--sf2);overflow-x:auto}
+.src-tab{font-family:'JetBrains Mono',monospace;font-size:10px;padding:8px 14px;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;color:var(--txd);white-space:nowrap}
+.src-tab:hover{color:var(--tx)}
+.src-tab.on{color:var(--ac);border-bottom-color:var(--ac)}
+.src-content{display:none;padding:14px 16px}
+.src-content.on{display:block;animation:fadein .2s ease}
+.src-row{margin-bottom:14px}
+.src-lbl{font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--txd);margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.req{font-size:8px;padding:1px 5px;border-radius:3px;background:var(--rdbg);color:var(--rd)}
+.src-ta{width:100%;background:var(--sf2);border:1px solid var(--bd);border-radius:5px;color:var(--tx);font-family:'JetBrains Mono',monospace;font-size:11px;padding:8px 10px;resize:vertical;min-height:60px;transition:border-color .15s;line-height:1.5}
+.src-ta:focus{outline:none;border-color:var(--ac)}
+.src-grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.src-grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.src-num{width:100%;background:var(--sf2);border:1px solid var(--bd);border-radius:5px;color:var(--tx);font-family:'JetBrains Mono',monospace;font-size:12px;padding:5px 8px;transition:border-color .15s}
+.src-num:focus{outline:none;border-color:var(--ac)}
+.src-sel{width:100%;background:var(--sf2);border:1px solid var(--bd);border-radius:5px;color:var(--tx);font-family:'JetBrains Mono',monospace;font-size:11px;padding:5px 8px;cursor:pointer}
+.src-sel:focus{outline:none;border-color:var(--ac)}
+.ext-links{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.ext-btn{font-family:'JetBrains Mono',monospace;font-size:9.5px;padding:4px 10px;border-radius:5px;border:1px solid var(--bd2);background:var(--sf2);color:var(--txd);cursor:pointer;text-decoration:none;display:inline-block;transition:all .15s}
+.ext-btn:hover{color:var(--ac);border-color:var(--ac)}
+.ext-btn.t1{background:var(--gdbg);color:var(--gd);border-color:var(--gdbr)}
+.ext-btn.t1:hover{background:var(--gd);color:#000}
+.rep-sec{border:1px solid var(--bd);border-radius:8px;overflow:hidden;margin-top:4px}
+.rep-hdr{padding:8px 14px;background:var(--sf3);border-bottom:1px solid var(--bd);font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:var(--tx)}
+.rep-body{padding:12px 14px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.rep-full{grid-column:1/-1}
+.rep-lbl{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--txd);margin-bottom:4px}
+.chk-row{display:flex;align-items:flex-start;gap:8px;padding:5px 0;border-bottom:1px solid var(--bd);cursor:pointer}
+.chk-row:last-child{border-bottom:none}
+.chk-box{width:16px;height:16px;border:2px solid var(--bd2);border-radius:3px;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all .15s;font-size:10px}
+.chk-row.done .chk-box{background:var(--go);border-color:var(--go);color:#000}
+.chk-txt{font-size:11px;color:var(--txd);line-height:1.4}
+.chk-row.done .chk-txt{text-decoration:line-through;opacity:.5}
+.chk-row:hover .chk-txt{color:var(--tx)}
+.p1-badge{font-family:'JetBrains Mono',monospace;font-size:7.5px;padding:1px 5px;border-radius:3px;background:var(--rdbg);color:var(--rd);border:1px solid var(--rdbr);flex-shrink:0;margin-top:3px}
+.p2-badge{font-family:'JetBrains Mono',monospace;font-size:7.5px;padding:1px 5px;border-radius:3px;background:var(--sf3);color:var(--txd);border:1px solid var(--bd);flex-shrink:0;margin-top:3px}
+.action-bar{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--bd);background:var(--sf2);flex-wrap:wrap}
+.act-btn{font-family:'JetBrains Mono',monospace;font-size:10px;padding:5px 14px;border-radius:5px;border:1px solid var(--bd2);background:var(--sf3);color:var(--txd);cursor:pointer;transition:all .15s}
+.act-btn:hover{color:var(--ac);border-color:var(--ac)}
+.act-btn.primary{background:var(--ac3);color:var(--ac);border-color:var(--ac2)}
+.act-btn.primary:hover{background:var(--ac);color:#fff}
+.act-btn.danger{color:var(--rd);border-color:var(--rdbr)}
+.act-btn.danger:hover{background:var(--rdbg)}
+.ep-empty{padding:48px;text-align:center;color:var(--txd);font-family:'JetBrains Mono',monospace;font-size:11px}
+.ep-empty-ico{font-size:32px;display:block;margin-bottom:12px;opacity:.4}
+@keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@media(max-width:1000px){.bucket-grid{grid-template-columns:repeat(2,1fr) 1fr}.ep-crit-grid,.sip-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:700px){.bucket-grid,.ep-crit-grid,.sip-grid{grid-template-columns:1fr}.rep-body{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">NYSE <span>/</span> EP Screener</div>
+  <div class="nav">
+    <a class="nl" href="index.html">🧭 MM</a>
+    <a class="nl on" href="ep.html">🎯 EP</a>
+    <a class="nl" href="ntrt.html">⚡ NTRT</a>
+    <a class="nl" href="news.html">📰 News</a>
+  </div>
+  <div class="hs"></div>
+  <div class="tog" onclick="tog()">
+    <span id="ti">🌙</span><div class="tt"><div class="tk"></div></div><span id="tl">Dark</span>
+  </div>
+  <div id="upd-label">MAGNA53 EP Screener</div>
+</header>
+
+<div class="page">
+
+  <div class="sec-title">§0 · EP Screening Criteria — What to Look For</div>
+  <div class="ep-crit-grid">
+    <div class="ep-crit-group">
+      <div class="ep-crit-hdr">📈 Earnings &amp; Revenue (Core)</div>
+      <div class="ep-crit-item"><span class="dot dot-gn"></span>Beats revenue OR going to beat &amp; higher than street consensus</div>
+      <div class="ep-crit-item"><span class="dot dot-gn"></span>Earnings higher or going to be higher than street consensus</div>
+      <div class="ep-crit-item"><span class="dot dot-gn"></span>Going forward revenues higher than consensus — next quarter &amp; the year</div>
+      <div class="ep-crit-item"><span class="dot dot-gn"></span>Going forward earnings better than the street — next Q &amp; for the year</div>
+      <div class="ep-crit-item"><span class="dot dot-gn"></span>Margins increase above consensus (gross, operating, or net)</div>
+    </div>
+    <div class="ep-crit-group">
+      <div class="ep-crit-hdr">📊 Technical Qualifiers</div>
+      <div class="ep-crit-item"><span class="dot dot-or"></span>Price above $20 — cheaper stocks move less</div>
+      <div class="ep-crit-item"><span class="dot dot-or"></span>More than 1 million shares average daily volume</div>
+      <div class="ep-crit-item"><span class="dot dot-or"></span>High volume before the open</div>
+      <div class="ep-crit-item"><span class="dot dot-or"></span>Ready to make a new high, or break through a high for a significant period</div>
+      <div class="ep-crit-item"><span class="dot dot-or"></span>Fits an identifiable pattern (e.g. stocks up on open that just go higher this season)</div>
+      <div class="ep-crit-item"><span class="dot dot-or"></span>Reported yesterday AMC &amp; trading higher premarket than yesterday's AH close</div>
+    </div>
+    <div class="ep-crit-group">
+      <div class="ep-crit-hdr">🔴 Short Squeeze Setup</div>
+      <div class="ep-crit-item"><span class="dot dot-rd"></span>Heavily shorted — more than 20% short interest is key threshold</div>
+      <div class="ep-crit-item"><span class="dot dot-rd"></span>Sold off a lot lately — beaten down stock starting to move back up</div>
+      <div class="ep-crit-item"><span class="dot dot-rd"></span>News that made it go down confirmed exaggerated or untrue</div>
+      <div class="ep-crit-item"><span class="dot dot-rd"></span>Tier I bank defends the stock (Goldman, Morgan Stanley, Citi)</div>
+    </div>
+    <div class="ep-crit-group">
+      <div class="ep-crit-hdr">🔬 Catalyst &amp; Story</div>
+      <div class="ep-crit-item"><span class="dot dot-ac"></span>New product to sell that is unexpected</div>
+      <div class="ep-crit-item"><span class="dot dot-ac"></span>Gaining market share</div>
+      <div class="ep-crit-item"><span class="dot dot-ac"></span>Biotech: Phase III data (most important), Phase II also qualifies</div>
+      <div class="ep-crit-item"><span class="dot dot-ac"></span>Potential takeover candidate — rumor circulating. Check sector peers too.</div>
+      <div class="ep-crit-item"><span class="dot dot-rd"></span>Government investigation — be careful on the long side</div>
+    </div>
+    <div class="ep-crit-group">
+      <div class="ep-crit-hdr">🏦 Analyst Upgrades</div>
+      <div class="ep-crit-item"><span class="dot dot-gd"></span><b>Tier I</b> — Goldman Sachs, Morgan Stanley, Citigroup carry the most weight</div>
+      <div class="ep-crit-item"><span class="dot dot-gd"></span>More than one upgrade in a stock is a stronger signal</div>
+      <div class="ep-crit-item"><span class="dot dot-gd"></span>Pay special attention to price target given vs. where stock is currently trading</div>
+      <div class="ep-crit-item"><span class="dot dot-gd"></span>Tier II (JPM, BofA, Wells, UBS) and Tier III count — just less weight</div>
+    </div>
+    <div class="ep-crit-group">
+      <div class="ep-crit-hdr">⚠ Disqualifiers &amp; Risk Flags</div>
+      <div class="ep-crit-item"><span class="dot dot-rd"></span>Price below $20 — reduces move potential significantly</div>
+      <div class="ep-crit-item"><span class="dot dot-rd"></span>Average daily volume below 1M shares</div>
+      <div class="ep-crit-item"><span class="dot dot-rd"></span>Government investigation — use extra caution on long side</div>
+      <div class="ep-crit-item"><span class="dot dot-or"></span>Biotech Phase I only — very early stage, high risk</div>
+      <div class="ep-crit-item"><span class="dot dot-or"></span>Only one Tier III upgrade — weakest signal</div>
+    </div>
+  </div>
+
+  <div class="sec-title">§1 · SIP Resources</div>
+  <div class="sip-grid">
+    <div class="sip-group">
+      <div class="sip-group-hdr">📅 Earnings Calendars</div>
+      <a class="sip-link" href="https://www.thestockcatalyst.com/EarningsCalendars" target="_blank">Stock Catalyst — Earnings Calendars</a>
+      <a class="sip-link" href="https://www.earningswhispers.com/calendar" target="_blank">Earnings Whispers — Calendar</a>
+      <a class="sip-link" href="https://www.zacks.com/earnings/earnings-reports" target="_blank">Zacks Earnings Reports</a>
+      <a class="sip-link" href="https://www.zacks.com/earnings/earnings-calendar" target="_blank">Zacks Earnings Calendar</a>
+      <a class="sip-link" href="https://earningshub.com/" target="_blank">Earnings Hub</a>
+      <a class="sip-link" href="https://www.earningspike.com/" target="_blank">Earnings Spike</a>
+    </div>
+    <div class="sip-group">
+      <div class="sip-group-hdr">🌅 Pre / Post Market</div>
+      <a class="sip-link" href="https://www.wsj.com/market-data/stocks/extendedhours" target="_blank">WSJ — Extended Hours Movers</a>
+      <a class="sip-link" href="https://goo.gl/9ZYmW7" target="_blank">WSJ — Post Market Winners</a>
+      <a class="sip-link" href="https://yolostocks.live/" target="_blank">YoloStocks Live</a>
+      <a class="sip-link" href="https://hosting.briefing.com/cschwab/InDepth/InPlay.htm" target="_blank">Briefing — InPlay (Schwab)</a>
+      <a class="sip-link" href="https://www.briefing.com/stock-market-update" target="_blank">Briefing — Market Update</a>
+    </div>
+    <div class="sip-group">
+      <div class="sip-group-hdr">📰 News &amp; Research</div>
+      <a class="sip-link" href="https://newsfilter.io/" target="_blank">NewsFilter.io — Deep Dive &amp; News</a>
+      <a class="sip-link" href="https://thefly.com/news.php" target="_blank">TheFly.com</a>
+      <a class="sip-link" href="https://www.bloomberg.com/markets" target="_blank">Bloomberg Markets</a>
+      <a class="sip-link" href="https://www.wsj.com" target="_blank">Wall Street Journal</a>
+      <a class="sip-link" href="https://seekingalpha.com/" target="_blank">Seeking Alpha</a>
+      <a class="sip-link" href="https://www.investors.com/" target="_blank">IBD — Investor's Business Daily</a>
+      <a class="sip-link" href="https://www.cnbc.com/world/" target="_blank">CNBC World</a>
+    </div>
+    <div class="sip-group">
+      <div class="sip-group-hdr">🏛 Institutional Ownership</div>
+      <a class="sip-link" href="https://www.nasdaq.com/market-activity/stocks/TICKER/institutional-holdings" target="_blank">Nasdaq — Institutional Holdings</a>
+      <a class="sip-link" href="https://fintel.io/so/us/TICKER" target="_blank">Fintel — Short &amp; Inst. Ownership</a>
+      <a class="sip-link" href="https://www.cmlviz.com/stocks/TICKER" target="_blank">CML Viz — Smart Money</a>
+      <a class="sip-link" href="https://finance.yahoo.com/quote/TICKER/holders" target="_blank">Yahoo Finance — Holders</a>
+      <a class="sip-link" href="https://capedge.com/" target="_blank">Capedge — Ownership History</a>
+    </div>
+    <div class="sip-group">
+      <div class="sip-group-hdr">🔍 Stock Research &amp; Ratings</div>
+      <a class="sip-link" href="https://www.thestockcatalyst.com" target="_blank">The Stock Catalyst (SIP Daily)</a>
+      <a class="sip-link" href="https://earningswhispers.com/epsdetails/" target="_blank">Earnings Whispers — EPS Details</a>
+      <a class="sip-link" href="https://www.marketbeat.com/ratings/" target="_blank">MarketBeat — Analyst Ratings</a>
+      <a class="sip-link" href="https://stockanalysis.com/" target="_blank">Stock Analysis</a>
+      <a class="sip-link" href="https://app.koyfin.com/home" target="_blank">Koyfin</a>
+      <a class="sip-link" href="https://www.briefing.com/" target="_blank">Briefing.com</a>
+    </div>
+    <div class="sip-group">
+      <div class="sip-group-hdr">📊 More Data &amp; Charts</div>
+      <a class="sip-link" href="https://www.nasdaq.com/" target="_blank">Nasdaq.com</a>
+      <a class="sip-link" href="https://finance.yahoo.com/" target="_blank">Yahoo Finance</a>
+      <a class="sip-link" href="https://www.marketbeat.com/" target="_blank">MarketBeat</a>
+      <a class="sip-link" href="https://www.bloomberg.com/" target="_blank">Bloomberg</a>
+      <a class="sip-link" href="https://www.barrons.com/" target="_blank">Barron's</a>
+      <a class="sip-link" href="https://www.zacks.com/" target="_blank">Zacks</a>
+      <a class="sip-link" href="https://www.fool.com/" target="_blank">Motley Fool</a>
+    </div>
+  </div>
+
+  <div class="sec-title">§2 · Weekly Triage Buckets</div>
+  <div class="week-row">
+    <span class="week-lbl">Week of</span>
+    <input class="week-input" type="date" id="week-date" onchange="onWeekChange()">
+    <button class="week-btn" onclick="prevWeek()">‹ Prev</button>
+    <button class="week-btn" onclick="nextWeek()">Next ›</button>
+    <button class="week-btn" onclick="thisWeek()">Today</button>
+    <button class="week-btn" style="color:var(--ac);border-color:var(--ac2)" onclick="saveAll()">💾 Save</button>
+    <span class="save-badge" id="save-badge">Saved ✓</span>
+  </div>
+  <div class="bucket-grid" id="bucket-grid"></div>
+
+  <div class="sec-title">§3 · Research Checklist &amp; EP Filter</div>
+  <div id="research-area">
+    <div class="ep-empty"><span class="ep-empty-ico">🎯</span>Click any ticker chip above to open its research panel.</div>
+  </div>
+
+</div>
+
+<script>
+const DAYS=['Monday','Tuesday','Wednesday','Thursday','Friday'];
+let activeWeek=mondayOf(new Date()),activeTicker=null;
+
+function tog(){const h=document.documentElement,d=h.getAttribute('data-theme')==='dark',n=d?'light':'dark';h.setAttribute('data-theme',n);document.getElementById('ti').textContent=d?'☀️':'🌙';document.getElementById('tl').textContent=d?'Light':'Dark';lsSet('psx-mm-theme',n);}
+(()=>{const s=lsGet('psx-mm-theme');if(s){document.documentElement.setAttribute('data-theme',s);document.getElementById('ti').textContent=s==='light'?'☀️':'🌙';document.getElementById('tl').textContent=s==='light'?'Light':'Dark';}})();
+function openTV(sym){if(!sym)return;window.open(`https://www.tradingview.com/chart/?symbol=${sym.toUpperCase()}`,'_blank','noopener');}
+function lsGet(k){try{return localStorage.getItem(k);}catch{return null;}}
+function lsSet(k,v){try{localStorage.setItem(k,v);}catch{}}
+function lsGetJSON(k,d={}){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch{return d;}}
+function lsSetJSON(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch{}}
+function mondayOf(d){const dt=new Date(d);const day=dt.getDay();dt.setDate(dt.getDate()+(day===0?-6:1-day));return isoDate(dt);}
+function isoDate(d){return new Date(d).toISOString().split('T')[0];}
+function addDays(d,n){const dt=new Date(d+'T00:00:00');dt.setDate(dt.getDate()+n);return isoDate(dt);}
+function fmtShort(d){try{return new Date(d+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});}catch{return d;}}
+function isToday(d){return isoDate(new Date())===d;}
+function weekKey(){return 'ep_week_'+activeWeek;}
+function loadWeek(){return lsGetJSON(weekKey(),{tickers:{},research:{}});}
+function saveWeek(data){lsSetJSON(weekKey(),data);}
+function thisWeek(){activeWeek=mondayOf(new Date());syncDateInput();renderBuckets();}
+function prevWeek(){activeWeek=addDays(activeWeek,-7);syncDateInput();renderBuckets();}
+function nextWeek(){activeWeek=addDays(activeWeek,7);syncDateInput();renderBuckets();}
+function onWeekChange(){const v=document.getElementById('week-date').value;if(v)activeWeek=mondayOf(new Date(v+'T00:00:00'));renderBuckets();}
+function syncDateInput(){document.getElementById('week-date').value=activeWeek;}
+function parseSymbols(text){return[...new Set(text.toUpperCase().split(/[\s,;\n\t]+/).map(s=>s.replace(/[^A-Z0-9\.]/g,'')).filter(s=>s.length>=1&&s.length<=6))];}
+
+function renderBuckets(){
+  const data=loadWeek();const el=document.getElementById('bucket-grid');let h='';
+  DAYS.forEach((day,i)=>{
+    const date=addDays(activeWeek,i),today=isToday(date),tickers=data.tickers[day]||[];
+    h+=`<div class="bucket${today?' today':''}" id="bucket-${day}">
+      <div class="bucket-hdr"><span class="bucket-day">${day.slice(0,3)}</span><span class="bucket-date">${fmtShort(date)}</span>${tickers.length?`<span class="bucket-count">${tickers.length}</span>`:''}</div>
+      <textarea class="bucket-input" id="ta-${day}" placeholder="Paste tickers:\nAAPL MSFT NVDA" rows="3" onblur="parseBucket('${day}')" onkeydown="if(event.key==='Enter'&&event.ctrlKey)parseBucket('${day}')">${data.raw&&data.raw[day]?data.raw[day]:tickers.join(' ')}</textarea>
+      <div class="bucket-chips" id="chips-${day}">${tickers.map(t=>`<div class="chip${activeTicker===t?' active':''}" onclick="openResearch('${t}','${day}','${date}')">${t}<span class="chip-x" onclick="event.stopPropagation();removeChip('${day}','${t}')">✕</span></div>`).join('')}</div>
+      <button class="bucket-add-btn" onclick="parseBucket('${day}')">+ Parse Tickers</button>
+    </div>`;
+  });
+  el.innerHTML=h;
+}
+
+function parseBucket(day){
+  const ta=document.getElementById('ta-'+day),tickers=parseSymbols(ta.value);
+  const data=loadWeek();if(!data.tickers)data.tickers={};if(!data.raw)data.raw={};
+  data.tickers[day]=tickers;data.raw[day]=ta.value;saveWeek(data);renderBuckets();
+  if(activeTicker&&tickers.includes(activeTicker))renderResearch(activeTicker);
+}
+
+function removeChip(day,ticker){
+  const data=loadWeek();data.tickers[day]=(data.tickers[day]||[]).filter(t=>t!==ticker);saveWeek(data);
+  if(activeTicker===ticker){activeTicker=null;document.getElementById('research-area').innerHTML='<div class="ep-empty"><span class="ep-empty-ico">🎯</span>Click any ticker chip above to open its research panel.</div>';}
+  renderBuckets();
+}
+
+const SOURCES=[{id:'earnings',label:'📰 Earnings'},{id:'chart',label:'📊 Chart & Short'},{id:'upgrades',label:'🏦 Upgrades'},{id:'social',label:'📡 News & Social'},{id:'report',label:'📋 EP Report'}];
+
+const MAGNA=[
+  {key:'EPS',label:'EPS Beat',tip:'Earnings higher or going to be higher than street consensus'},
+  {key:'REV',label:'Revenue Beat',tip:'Beats revenue or going to beat — higher than consensus. Forward revenues also higher.'},
+  {key:'MGNS',label:'Margins Up',tip:'Margins increase above consensus — gross, operating, or net'},
+  {key:'GAP',label:'Gap / Volume',tip:'High volume before open, significant gap. If AMC yesterday — premarket > yesterday AH close.'},
+  {key:'SHORT',label:'>20% Short',tip:'Heavily shorted >20% float — squeeze fuel. Beaten down stock starting to recover.'},
+  {key:'TECH',label:'Breakout Setup',tip:'Price >$20, avg vol >1M shares, ready to make new high or break through significant period high, fits pattern'},
+  {key:'UPG',label:'Tier I Upgrade',tip:'Upgrade from Goldman Sachs, Morgan Stanley, Citigroup — or multiple upgrades with strong PT vs current price'},
+  {key:'STORY',label:'Catalyst / Story',tip:'New product, market share gain, biotech Phase II/III, takeover rumor, or news reversal (bad news confirmed untrue)'},
+];
+
+const CHECKLIST={
+  earnings:[
+    {t:'Confirm EPS actual vs. estimate — check Earnings Whispers EPS details',p:1},
+    {t:'Calculate EPS surprise % — is it above consensus?',p:1},
+    {t:'Confirm revenue actual vs. estimate',p:1},
+    {t:'Note going-forward revenue guidance vs. consensus — next Q and year',p:1},
+    {t:'Note going-forward EPS guidance vs. consensus — next Q and year',p:1},
+    {t:'Read guidance wording: Upgraded / Reiterated / Lowered',p:1},
+    {t:'Check margins: gross, operating, net — above or below consensus?',p:2},
+    {t:'Read earnings press release for business drivers and specific numbers',p:2},
+    {t:'Check Zacks for detailed forward estimates',p:2},
+    {t:'Note any one-time items that inflate or deflate EPS',p:2},
+  ],
+  chart:[
+    {t:'Confirm price is ABOVE $20 — below $20 moves much less',p:1},
+    {t:'Confirm average daily volume > 1 million shares',p:1},
+    {t:'Note gap % and today\'s volume vs. average',p:1},
+    {t:'If reported AMC yesterday — is premarket price above yesterday\'s AH close?',p:1},
+    {t:'Is stock approaching a new 52W high or breaking out of a significant base?',p:1},
+    {t:'Short interest % float — is it above 20%? If yes, strong short squeeze potential.',p:1},
+    {t:'Has the stock sold off a lot lately and is now starting to move back up?',p:2},
+    {t:'Confirm gap and hold vs. gap and fade pattern',p:2},
+    {t:'Check institutional ownership trend — accumulating or distributing?',p:2},
+    {t:'Does it fit an identifiable pattern from this earnings season?',p:2},
+  ],
+  upgrades:[
+    {t:'Check for Tier I upgrades: Goldman Sachs, Morgan Stanley, Citigroup',p:1},
+    {t:'Is Tier I bank DEFENDING the stock after bad news? (extra strong signal)',p:1},
+    {t:'Count total upgrades — more than one upgrade is a much stronger signal',p:1},
+    {t:'Note price target given vs. current stock price — large gap = big upside',p:1},
+    {t:'Check Tier II firms: JPMorgan, Bank of America, Wells Fargo, UBS',p:2},
+    {t:'Read the analyst commentary — "reiterate buy" vs. actual upgrade matters',p:2},
+    {t:'Check MarketBeat ratings for full upgrade/downgrade timeline',p:2},
+    {t:'Note if multiple Tier III upgrades are clustering — can still be meaningful',p:2},
+  ],
+  social:[
+    {t:'Scan X (Twitter) $TICKER for real-time sentiment and short interest chatter',p:1},
+    {t:'Check NewsFilter.io for deep-dive news and catalyst confirmation',p:1},
+    {t:'Check TheFly.com for post-earnings analyst commentary',p:1},
+    {t:'Is there a takeover rumor? Check other stocks in the sector too.',p:2},
+    {t:'Biotech: confirm Phase II or Phase III data — Phase III is most important',p:2},
+    {t:'Has bad news that caused the selloff been confirmed exaggerated or untrue?',p:2},
+    {t:'Any pending catalysts: FDA decision, contract award, partnership announcement?',p:2},
+    {t:'Check WSJ post-market winners list for context',p:2},
+  ],
+};
+
+function getRD(ticker){const data=loadWeek();return(data.research&&data.research[ticker])||{magna:{},checklist:{},story:'',eps:'',rev:'',guidance:'',notes:'',gap:'',short_pct:'',vol:'',price_cur:'',inst_own:'',chart_notes:'',upg_tier1:'',upg_count:'',upg_pt:'',upg_notes:'',x_sent:'',news:'',catalyst:'',ep_verdict:'',activeTab:'earnings'};}
+function saveRD(ticker,rd){const data=loadWeek();if(!data.research)data.research={};data.research[ticker]=rd;saveWeek(data);}
+
+let activeTab='earnings';
+
+function openResearch(ticker,day,date){activeTicker=ticker;activeTab=getRD(ticker).activeTab||'earnings';renderBuckets();renderResearch(ticker,day,date);}
+
+function renderResearch(ticker,day,date){
+  if(!ticker)return;
+  const rd=getRD(ticker);activeTab=rd.activeTab||'earnings';
+  const mv=rd.magna||{},gc=Object.values(mv).filter(v=>v==='go').length,tot=MAGNA.length;
+  let verdict='pend',vl='⏳ Pending';
+  if(gc>=6){verdict='go';vl=`✅ GO — ${gc}/${tot} met`;}
+  else if(gc>=4){verdict='pend';vl=`⚠ ${gc}/${tot} — Review`;}
+  else if(Object.keys(mv).length>0){verdict='nogo';vl=`❌ NO-GO — ${gc}/${tot}`;}
+
+  let h=`<div class="research-panel">
+    <div class="rp-hdr">
+      <span class="rp-sym" onclick="openTV('${ticker}')">${ticker}</span>
+      ${day?`<span class="rp-day-tag">${day} · ${fmtShort(date||'')}</span>`:''}
+      <span style="font-size:11px;color:var(--txd);flex:1">${rd.story?rd.story.slice(0,70)+'…':''}</span>
+      <button class="rp-close" onclick="closeResearch()">✕ Close</button>
+    </div>
+    <div class="magna-row">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--txd);margin-right:4px;letter-spacing:.08em;text-transform:uppercase">EP FILTER</span>
+      ${MAGNA.map(m=>{const s=mv[m.key]||'pending';return`<div class="mg ${s}" onclick="cycleMagna('${ticker}','${m.key}')" title="${m.tip}">${m.label}</div>`;}).join('')}
+      <div class="mg-verdict mv-${verdict}">${vl}</div>
+    </div>
+    <div class="src-tabs">${SOURCES.map(s=>`<div class="src-tab${activeTab===s.id?' on':''}" id="tab-${s.id}-${ticker}" onclick="switchTab('${ticker}','${s.id}')">${s.label}</div>`).join('')}</div>`;
+
+  // Earnings tab
+  h+=`<div class="src-content${activeTab==='earnings'?' on':''}" id="sc-earnings-${ticker}">
+    <div class="src-row"><div class="src-lbl">The Story <span class="req">required</span></div>
+      <textarea class="src-ta" rows="3" placeholder="Narrative from earnings press release / Briefing.com…" oninput="saveF('${ticker}','story',this.value)">${rd.story||''}</textarea></div>
+    <div class="src-grid3">
+      <div><div class="src-lbl">EPS Surprise %</div><input class="src-num" placeholder="+42%" value="${rd.eps||''}" oninput="saveF('${ticker}','eps',this.value)"></div>
+      <div><div class="src-lbl">Revenue Growth % YoY</div><input class="src-num" placeholder="+29% YoY" value="${rd.rev||''}" oninput="saveF('${ticker}','rev',this.value)"></div>
+      <div><div class="src-lbl">Guidance</div>
+        <select class="src-sel" onchange="saveF('${ticker}','guidance',this.value)">
+          <option value="">— select —</option>
+          <option value="Upgraded" ${rd.guidance==='Upgraded'?'selected':''}>Upgraded 📈</option>
+          <option value="Reiterated" ${rd.guidance==='Reiterated'?'selected':''}>Reiterated ➡</option>
+          <option value="Lowered" ${rd.guidance==='Lowered'?'selected':''}>Lowered 📉</option>
+          <option value="N/A" ${rd.guidance==='N/A'?'selected':''}>N/A</option>
+        </select></div>
+    </div>
+    <div class="src-row" style="margin-top:10px"><div class="src-lbl">Margins / Forward EPS &amp; Rev vs. Consensus / Notes</div>
+      <textarea class="src-ta" rows="2" placeholder="Gross/net margin vs prior Q. Forward EPS and rev guidance vs street. Any one-time items…" oninput="saveF('${ticker}','notes',this.value)">${rd.notes||''}</textarea></div>
+    ${chklst(ticker,'earnings',rd)}
+    <div class="ext-links">
+      <a class="ext-btn" href="https://earningswhispers.com/epsdetails/${ticker}" target="_blank" rel="noopener">↗ Earnings Whispers</a>
+      <a class="ext-btn" href="https://www.zacks.com/stock/quote/${ticker}/detailed-earning-estimates" target="_blank" rel="noopener">↗ Zacks Earnings</a>
+      <a class="ext-btn" href="https://earningshub.com/" target="_blank" rel="noopener">↗ Earnings Hub</a>
+      <a class="ext-btn" href="https://finance.yahoo.com/quote/${ticker}/financials" target="_blank" rel="noopener">↗ Yahoo Financials</a>
+      <a class="ext-btn" href="https://stockanalysis.com/stocks/${ticker.toLowerCase()}/" target="_blank" rel="noopener">↗ Stock Analysis</a>
+    </div></div>`;
+
+  // Chart tab
+  h+=`<div class="src-content${activeTab==='chart'?' on':''}" id="sc-chart-${ticker}">
+    <div class="src-grid3" style="margin-bottom:12px">
+      <div><div class="src-lbl">Gap % Pre/Post</div><input class="src-num" placeholder="+12.5%" value="${rd.gap||''}" oninput="saveF('${ticker}','gap',this.value)"></div>
+      <div><div class="src-lbl">Short Interest % Float</div><input class="src-num" placeholder="22% float" value="${rd.short_pct||''}" oninput="saveF('${ticker}','short_pct',this.value)"></div>
+      <div><div class="src-lbl">Volume vs. Avg</div><input class="src-num" placeholder="3.2x avg" value="${rd.vol||''}" oninput="saveF('${ticker}','vol',this.value)"></div>
+      <div><div class="src-lbl">Current Price</div><input class="src-num" placeholder="$42.50" value="${rd.price_cur||''}" oninput="saveF('${ticker}','price_cur',this.value)"></div>
+      <div><div class="src-lbl">Avg Daily Volume</div><input class="src-num" placeholder="1.5M shares" value="${rd.avg_vol||''}" oninput="saveF('${ticker}','avg_vol',this.value)"></div>
+      <div><div class="src-lbl">Inst. Ownership %</div><input class="src-num" placeholder="68%" value="${rd.inst_own||''}" oninput="saveF('${ticker}','inst_own',this.value)"></div>
+    </div>
+    <div class="src-row"><div class="src-lbl">Chart Notes / Technical Setup <span class="req">required</span></div>
+      <textarea class="src-ta" rows="3" placeholder="Price >$20? Avg vol >1M? Gap and hold or fade? Near new high / breakout? If AMC yesterday — is PM > yesterday AH? Beaten down stock recovering? Pattern match?" oninput="saveF('${ticker}','chart_notes',this.value)">${rd.chart_notes||''}</textarea></div>
+    ${chklst(ticker,'chart',rd)}
+    <div class="ext-links">
+      <a class="ext-btn" href="https://www.wsj.com/market-data/stocks/extendedhours" target="_blank" rel="noopener">↗ WSJ Extended Hours</a>
+      <a class="ext-btn" href="https://yolostocks.live/" target="_blank" rel="noopener">↗ YoloStocks Live</a>
+      <a class="ext-btn" href="https://fintel.io/so/us/${ticker}" target="_blank" rel="noopener">↗ Fintel Short &amp; Inst.</a>
+      <a class="ext-btn" href="https://www.nasdaq.com/market-activity/stocks/${ticker.toLowerCase()}/institutional-holdings" target="_blank" rel="noopener">↗ Nasdaq Holders</a>
+      <a class="ext-btn" href="https://finviz.com/quote.ashx?t=${ticker}" target="_blank" rel="noopener">↗ Finviz</a>
+    </div></div>`;
+
+  // Upgrades tab
+  h+=`<div class="src-content${activeTab==='upgrades'?' on':''}" id="sc-upgrades-${ticker}">
+    <div class="src-grid2" style="margin-bottom:12px">
+      <div><div class="src-lbl">Tier I Upgrade? <span class="req">required</span></div>
+        <select class="src-sel" onchange="saveF('${ticker}','upg_tier1',this.value)">
+          <option value="">— select —</option>
+          <option value="Goldman Sachs" ${rd.upg_tier1==='Goldman Sachs'?'selected':''}>✅ Goldman Sachs</option>
+          <option value="Morgan Stanley" ${rd.upg_tier1==='Morgan Stanley'?'selected':''}>✅ Morgan Stanley</option>
+          <option value="Citigroup" ${rd.upg_tier1==='Citigroup'?'selected':''}>✅ Citigroup</option>
+          <option value="Tier I Defending" ${rd.upg_tier1==='Tier I Defending'?'selected':''}>🛡 Tier I Defending</option>
+          <option value="Tier II Only" ${rd.upg_tier1==='Tier II Only'?'selected':''}>⚠ Tier II Only</option>
+          <option value="Tier III Only" ${rd.upg_tier1==='Tier III Only'?'selected':''}>❌ Tier III Only</option>
+          <option value="None" ${rd.upg_tier1==='None'?'selected':''}>None</option>
+        </select></div>
+      <div><div class="src-lbl">Total # of Upgrades</div><input class="src-num" placeholder="e.g. 3 upgrades" value="${rd.upg_count||''}" oninput="saveF('${ticker}','upg_count',this.value)"></div>
+    </div>
+    <div class="src-row"><div class="src-lbl">Price Target vs. Current Price</div>
+      <input class="src-num" placeholder="PT: $85 · Current: $62 → 37% upside" value="${rd.upg_pt||''}" oninput="saveF('${ticker}','upg_pt',this.value)"></div>
+    <div class="src-row" style="margin-top:10px"><div class="src-lbl">Upgrade Details (firm, action, rating, PT, date)</div>
+      <textarea class="src-ta" rows="3" placeholder="Goldman Sachs: Upgrade to Buy · PT $140 · March 24&#10;Morgan Stanley: Reiterate Overweight · PT $130 · March 23" oninput="saveF('${ticker}','upg_notes',this.value)">${rd.upg_notes||''}</textarea></div>
+    ${chklst(ticker,'upgrades',rd)}
+    <div class="ext-links">
+      <a class="ext-btn t1" href="https://www.marketbeat.com/stocks/NASDAQ/${ticker}/analyst-ratings/" target="_blank" rel="noopener">↗ MarketBeat Ratings (Tier I check)</a>
+      <a class="ext-btn" href="https://thefly.com/news.php?Id=${ticker}" target="_blank" rel="noopener">↗ TheFly Upgrades</a>
+      <a class="ext-btn" href="https://stockanalysis.com/stocks/${ticker.toLowerCase()}/forecast/" target="_blank" rel="noopener">↗ Stock Analysis Forecasts</a>
+      <a class="ext-btn" href="https://app.koyfin.com/home" target="_blank" rel="noopener">↗ Koyfin</a>
+    </div></div>`;
+
+  // Social tab
+  h+=`<div class="src-content${activeTab==='social'?' on':''}" id="sc-social-${ticker}">
+    <div class="src-row"><div class="src-lbl">X (Twitter) Sentiment</div>
+      <textarea class="src-ta" rows="2" placeholder="Real-time sentiment from $${ticker} — bullish/bearish, short interest chatter, notable accounts…" oninput="saveF('${ticker}','x_sent',this.value)">${rd.x_sent||''}</textarea></div>
+    <div class="src-row"><div class="src-lbl">News — Upgrades / Catalyst / Story</div>
+      <textarea class="src-ta" rows="3" placeholder="Analyst actions, takeover rumors, new product, biotech Phase II/III data…&#10;Bad news confirmed exaggerated or untrue? Government investigation?" oninput="saveF('${ticker}','news',this.value)">${rd.news||''}</textarea></div>
+    <div class="src-row"><div class="src-lbl">Catalyst Confirmation &amp; Sector Check</div>
+      <textarea class="src-ta" rows="2" placeholder="Takeover rumor: check other stocks in same sector. Biotech Phase III > Phase II. FDA, contract, partnership?" oninput="saveF('${ticker}','catalyst',this.value)">${rd.catalyst||''}</textarea></div>
+    ${chklst(ticker,'social',rd)}
+    <div class="ext-links">
+      <a class="ext-btn" href="https://twitter.com/search?q=%24${ticker}" target="_blank" rel="noopener">↗ X: $${ticker}</a>
+      <a class="ext-btn" href="https://newsfilter.io/" target="_blank" rel="noopener">↗ NewsFilter.io</a>
+      <a class="ext-btn" href="https://thefly.com/news.php" target="_blank" rel="noopener">↗ TheFly.com</a>
+      <a class="ext-btn" href="https://goo.gl/9ZYmW7" target="_blank" rel="noopener">↗ WSJ Post-Market Winners</a>
+      <a class="ext-btn" href="https://yolostocks.live/" target="_blank" rel="noopener">↗ YoloStocks Live</a>
+    </div></div>`;
+
+  // Report tab
+  h+=`<div class="src-content${activeTab==='report'?' on':''}" id="sc-report-${ticker}">
+    <div class="rep-sec"><div class="rep-hdr">Section A — Earnings Fundamentals</div>
+      <div class="rep-body">
+        <div class="rep-full"><div class="rep-lbl">The Story</div><textarea class="src-ta" rows="3" placeholder="Full EP narrative…" oninput="saveF('${ticker}','story',this.value)">${rd.story||''}</textarea></div>
+        <div><div class="rep-lbl">EPS Surprise %</div><input class="src-num" placeholder="+150%" value="${rd.eps||''}" oninput="saveF('${ticker}','eps',this.value)"></div>
+        <div><div class="rep-lbl">Revenue Surprise %</div><input class="src-num" placeholder="+12% vs est" value="${rd.rev||''}" oninput="saveF('${ticker}','rev',this.value)"></div>
+        <div><div class="rep-lbl">Guidance</div><input class="src-num" placeholder="Upgraded / Lowered" value="${rd.guidance||''}" oninput="saveF('${ticker}','guidance',this.value)"></div>
+      </div></div>
+    <div class="rep-sec" style="margin-top:10px"><div class="rep-hdr">Section B — Technical &amp; Short Interest</div>
+      <div class="rep-body">
+        <div><div class="rep-lbl">Short Interest % Float</div><input class="src-num" placeholder=">20% = squeeze fuel" value="${rd.short_pct||''}" oninput="saveF('${ticker}','short_pct',this.value)"></div>
+        <div><div class="rep-lbl">Gap % / Volume vs Avg</div><input class="src-num" placeholder="+8.5% gap · 3.2x avg" value="${rd.gap||''}" oninput="saveF('${ticker}','gap',this.value)"></div>
+        <div><div class="rep-lbl">Institutional Ownership</div><input class="src-num" placeholder="68% owned · accumulating" value="${rd.inst_own||''}" oninput="saveF('${ticker}','inst_own',this.value)"></div>
+      </div></div>
+    <div class="rep-sec" style="margin-top:10px"><div class="rep-hdr">Section C — Analyst Upgrades &amp; Catalyst</div>
+      <div class="rep-body">
+        <div><div class="rep-lbl">Tier I Upgrade &amp; PT vs. Price</div><textarea class="src-ta" rows="3" placeholder="Goldman Buy · PT $140 · Current $98 → 43% upside" oninput="saveF('${ticker}','upg_notes',this.value)">${rd.upg_notes||''}</textarea></div>
+        <div style="grid-column:span 2"><div class="rep-lbl">Catalyst / News / Social Sentiment</div><textarea class="src-ta" rows="3" placeholder="New product, market share gain, biotech Phase III, takeover rumor, news reversal…" oninput="saveF('${ticker}','catalyst',this.value)">${rd.catalyst||''}</textarea></div>
+      </div></div>
+    <div style="padding:12px 14px 4px"><div class="src-lbl" style="margin-bottom:6px">EP Verdict</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        ${['✅ Strong EP — GO','⚠ Partial EP — Watch','❌ No-Go — Skip'].map(v=>`<div onclick="saveF('${ticker}','ep_verdict','${v}')" style="cursor:pointer;padding:5px 12px;border-radius:5px;border:1px solid var(--bd2);background:${rd.ep_verdict===v?'var(--ac3)':'var(--sf3)'};color:${rd.ep_verdict===v?'var(--ac)':'var(--txd)'};font-family:'JetBrains Mono',monospace;font-size:10px;transition:all .15s">${v}</div>`).join('')}
+      </div></div></div>`;
+
+  h+=`<div class="action-bar">
+    <button class="act-btn primary" onclick="saveAll()">💾 Save All</button>
+    <button class="act-btn" onclick="copyRpt('${ticker}')">📋 Copy Report</button>
+    <button class="act-btn" onclick="openTV('${ticker}')">📈 TradingView</button>
+    <button class="act-btn danger" onclick="clearT('${ticker}')">🗑 Clear</button>
+    <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--txd);margin-left:auto;align-self:center">Stored locally in browser</span>
+  </div></div>`;
+
+  document.getElementById('research-area').innerHTML=h;
+  SOURCES.forEach(s=>{const el=document.getElementById(`tab-${s.id}-${ticker}`);if(el)el.onclick=()=>switchTab(ticker,s.id);});
+}
+
+function chklst(ticker,srcId,rd){
+  const items=CHECKLIST[srcId]||[];if(!items.length)return'';
+  const done=rd.checklist&&rd.checklist[srcId]||[];
+  let h=`<div style="margin-top:10px;border:1px solid var(--bd);border-radius:5px;overflow:hidden"><div style="padding:5px 10px;background:var(--sf3);font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--txd);border-bottom:1px solid var(--bd)">Research Checklist — ${done.length}/${items.length} complete</div>`;
+  items.forEach((item,i)=>{
+    const isDone=done.includes(i);
+    h+=`<div class="chk-row${isDone?' done':''}" onclick="toggleChk('${ticker}','${srcId}',${i})">
+      <div class="chk-box">${isDone?'✓':''}</div>
+      <span class="${item.p===1?'p1-badge':'p2-badge'}">P${item.p}</span>
+      <div class="chk-txt">${item.t}</div>
+    </div>`;
+  });
+  return h+`</div>`;
+}
+
+function toggleChk(ticker,srcId,idx){
+  const rd=getRD(ticker);if(!rd.checklist)rd.checklist={};if(!rd.checklist[srcId])rd.checklist[srcId]=[];
+  const i=rd.checklist[srcId].indexOf(idx);if(i>=0)rd.checklist[srcId].splice(i,1);else rd.checklist[srcId].push(idx);
+  saveRD(ticker,rd);renderResearch(ticker);
+}
+function switchTab(ticker,tabId){
+  activeTab=tabId;const rd=getRD(ticker);rd.activeTab=tabId;saveRD(ticker,rd);
+  SOURCES.forEach(s=>{const t=document.getElementById(`tab-${s.id}-${ticker}`),c=document.getElementById(`sc-${s.id}-${ticker}`);if(t)t.classList.toggle('on',s.id===tabId);if(c)c.classList.toggle('on',s.id===tabId);});
+}
+function cycleMagna(ticker,key){
+  const rd=getRD(ticker);if(!rd.magna)rd.magna={};
+  const states=['pending','go','nogo'],cur=rd.magna[key]||'pending';
+  rd.magna[key]=states[(states.indexOf(cur)+1)%states.length];
+  saveRD(ticker,rd);renderResearch(ticker);
+}
+function saveF(ticker,field,value){const rd=getRD(ticker);rd[field]=value;saveRD(ticker,rd);}
+function closeResearch(){activeTicker=null;document.getElementById('research-area').innerHTML='<div class="ep-empty"><span class="ep-empty-ico">🎯</span>Click any ticker chip above to open its research panel.</div>';renderBuckets();}
+function clearT(ticker){if(!confirm(`Clear all research data for ${ticker}?`))return;const data=loadWeek();if(data.research)delete data.research[ticker];saveWeek(data);renderResearch(ticker);}
+function copyRpt(ticker){
+  const rd=getRD(ticker);
+  const lines=[`EP Report — ${ticker}`,'Week of '+activeWeek,'',`=== EP Filter ===`,...MAGNA.map(m=>{const s=rd.magna&&rd.magna[m.key]||'pending';return`${s==='go'?'✅':s==='nogo'?'❌':'⏳'} ${m.label}`}),'',`=== Earnings ===`,`Story: ${rd.story||'—'}`,`EPS Surprise: ${rd.eps||'—'}`,`Rev Growth: ${rd.rev||'—'}`,`Guidance: ${rd.guidance||'—'}`,'',`=== Technical ===`,`Short Interest: ${rd.short_pct||'—'} · Gap: ${rd.gap||'—'} · Vol: ${rd.vol||'—'}`,`Chart Notes: ${rd.chart_notes||'—'}`,'',`=== Upgrades ===`,`Tier I: ${rd.upg_tier1||'—'} · Count: ${rd.upg_count||'—'} · PT vs Price: ${rd.upg_pt||'—'}`,`Details: ${rd.upg_notes||'—'}`,'',`=== Catalyst ===`,`${rd.catalyst||'—'}`,'',`Verdict: ${rd.ep_verdict||'Pending'}`];
+  navigator.clipboard.writeText(lines.join('\n')).then(()=>showSaveBadge('Copied!')).catch(()=>alert(lines.join('\n')));
+}
+function saveAll(){showSaveBadge();}
+function showSaveBadge(txt='Saved ✓'){const el=document.getElementById('save-badge');if(!el)return;el.textContent=txt;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2000);}
+thisWeek();
+</script>
+</body>
+</html>

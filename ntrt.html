@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PSX · NTRT/MTRT Screener</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root,[data-theme="dark"]{
+  --bg:#060a0e;--sf:#0b1017;--sf2:#0f1720;--sf3:#131e28;
+  --bd:#162030;--bd2:#1e2e42;--bd3:#263848;
+  --tx:#c8ddf0;--txd:#3a5870;--txm:#1a2e40;
+  --ac:#00c4e8;--ac2:#006688;--ac3:rgba(0,196,232,.12);
+  --gn:#00e676;--gnbg:#001f0d;--gnmd:#003515;--gnbr:#00e67620;
+  --rd:#ff4444;--rdbg:#1f0000;--rdmd:#330000;--rdbr:#ff444420;
+  --gd:#ffd040;--gdbg:#1f1400;--gdbr:#ffd04020;
+  --or:#ff9c20;--orbg:#1f1000;
+  --pu:#b388ff;--pubg:#180d2e;
+  --tl:#26d4e8;--bl:#4db8ff;
+  --hdr:rgba(6,10,14,0.97);
+  --sl:rgba(0,0,0,0.08);
+  /* verdict colours */
+  --strong:#00e676;--strong-bg:#001f0d;--strong-br:#00e67640;
+  --watch:#ffd040;--watch-bg:#1f1400;--watch-br:#ffd04040;
+  --monitor:#4db8ff;--monitor-bg:#001a30;--monitor-br:#4db8ff40;
+  --skip:#3a5870;--skip-bg:#0a1018;--skip-br:#3a587040;
+}
+[data-theme="light"]{
+  --bg:#edf2f8;--sf:#ffffff;--sf2:#f4f8fc;--sf3:#eaf0f7;
+  --bd:#c4d4e8;--bd2:#a0bcd4;--bd3:#88a8c8;
+  --tx:#0a1828;--txd:#4a6a88;--txm:#88aac8;
+  --ac:#0077aa;--ac2:#005588;--ac3:rgba(0,119,170,.1);
+  --gn:#1a7a40;--gnbg:#e4f8ea;--gnmd:#c0ecd0;--gnbr:#1a7a4030;
+  --rd:#cc2222;--rdbg:#fde4e4;--rdmd:#f8c0c0;--rdbr:#cc222230;
+  --gd:#886000;--gdbg:#fff6d8;--gdbr:#88600030;
+  --or:#c66000;--orbg:#fff0d0;
+  --pu:#7b22cc;--pubg:#efe8ff;
+  --tl:#00838f;--bl:#1565c0;
+  --hdr:rgba(237,242,248,0.97);
+  --sl:transparent;
+  --strong:#1a7a40;--strong-bg:#e4f8ea;--strong-br:#1a7a4040;
+  --watch:#886000;--watch-bg:#fff6d8;--watch-br:#88600040;
+  --monitor:#1565c0;--monitor-bg:#dce8f8;--monitor-br:#1565c040;
+  --skip:#4a6a88;--skip-bg:#edf2f8;--skip-br:#4a6a8840;
+}
+
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--tx);font-family:'Syne',sans-serif;font-size:13px;line-height:1.5;min-height:100vh;transition:background .25s,color .25s;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,var(--sl) 3px,var(--sl) 4px);pointer-events:none;z-index:9999}
+
+/* ── HEADER ── */
+header{position:sticky;top:0;z-index:200;height:52px;background:var(--hdr);border-bottom:1px solid var(--bd);backdrop-filter:blur(16px);display:flex;align-items:center;padding:0 20px;gap:12px;transition:background .25s}
+.logo{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--ac);letter-spacing:.1em;text-transform:uppercase;white-space:nowrap}
+.logo span{color:var(--txd);font-weight:400}
+.nav{display:flex;gap:2px}
+.nl{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--txd);text-decoration:none;padding:4px 9px;border-radius:4px;border:1px solid transparent;transition:all .15s;white-space:nowrap}
+.nl:hover{color:var(--ac);border-color:var(--bd2)}
+.nl.on{color:var(--ac);background:rgba(0,196,232,.09);border-color:var(--ac2)}
+.hs{width:1px;height:22px;background:var(--bd);flex-shrink:0}
+.tog{display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--txd)}
+.tt{width:32px;height:18px;background:var(--bd);border-radius:9px;position:relative;border:1px solid var(--bd2);transition:background .2s}
+.tk{position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:var(--txd);transition:transform .2s,background .2s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+[data-theme="light"] .tk{transform:translateX(14px);background:var(--ac)}
+#upd{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--txd);white-space:nowrap}
+
+/* ── LAYOUT ── */
+.layout{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 52px)}
+
+/* ── SIDEBAR ── */
+.sb{border-right:1px solid var(--bd);background:var(--sf);padding:14px 0;overflow-y:auto;max-height:calc(100vh - 52px);position:sticky;top:52px;transition:background .25s,border-color .25s}
+.sb-hdr{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--txd);padding:8px 14px 4px}
+.cnav{display:flex;gap:3px;padding:0 8px 8px}
+.cnb{font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--sf2);border:1px solid var(--bd);color:var(--txd);border-radius:4px;padding:2px 8px;cursor:pointer;transition:all .15s}
+.cnb:hover{color:var(--ac);border-color:var(--bd2)}
+.rdi{padding:5px 14px;cursor:pointer;border-left:3px solid transparent;transition:all .15s;display:flex;flex-direction:column;gap:2px}
+.rdi:hover{background:var(--sf2);border-left-color:var(--bd2)}
+.rdi.sl{background:var(--ac3);border-left-color:var(--ac)}
+.rdi-date{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--tx);font-weight:600}
+.rdi.sl .rdi-date{color:var(--ac)}
+.rdi-meta{font-size:9px;color:var(--txd);font-family:'JetBrains Mono',monospace}
+.rdi-badges{display:flex;gap:3px;margin-top:2px;flex-wrap:wrap}
+.vb{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:.06em;padding:1px 5px;border-radius:3px;font-weight:700}
+.vb-strong{background:var(--strong-bg);color:var(--strong);border:1px solid var(--strong-br)}
+.vb-watch{background:var(--watch-bg);color:var(--watch);border:1px solid var(--watch-br)}
+.vb-monitor{background:var(--monitor-bg);color:var(--monitor);border:1px solid var(--monitor-br)}
+.sb-div{height:1px;background:var(--bd);margin:8px 14px}
+/* Framework reference */
+.sb-ref{padding:8px 14px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--txd);line-height:1.6}
+.sb-ref strong{color:var(--tx);font-size:9.5px}
+.sb-crit{display:flex;align-items:flex-start;gap:6px;margin:3px 0}
+.sb-crit-icon{font-size:11px;flex-shrink:0;margin-top:1px}
+
+/* ── MAIN CONTENT ── */
+main{padding:16px 18px 60px;overflow-x:hidden}
+
+/* ── STATS STRIP ── */
+.stats{display:flex;gap:1px;background:var(--bd);border:1px solid var(--bd);border-radius:8px;overflow:hidden;margin-bottom:16px}
+.stat{flex:1;background:var(--sf);padding:10px 12px;display:flex;flex-direction:column;gap:3px;min-width:80px}
+.stat-lbl{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--txd)}
+.stat-val{font-family:'JetBrains Mono',monospace;font-size:17px;font-weight:700;line-height:1}
+.stat-sub{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--txd)}
+.s-ac .stat-val{color:var(--ac)}
+.s-gn .stat-val{color:var(--gn)}
+.s-gd .stat-val{color:var(--gd)}
+.s-rd .stat-val{color:var(--rd)}
+.s-tl .stat-val{color:var(--tl)}
+
+/* ── FILTER TABS ── */
+.ftabs{display:flex;gap:4px;margin-bottom:14px;flex-wrap:wrap}
+.ft{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;padding:4px 10px;border-radius:5px;border:1px solid var(--bd);background:var(--sf);color:var(--txd);cursor:pointer;transition:all .15s}
+.ft:hover{color:var(--ac);border-color:var(--bd2)}
+.ft.on{color:var(--ac);background:var(--ac3);border-color:var(--ac2)}
+.ft-strong.on{color:var(--strong);background:var(--strong-bg);border-color:var(--strong-br)}
+.ft-watch.on{color:var(--watch);background:var(--watch-bg);border-color:var(--watch-br)}
+.ft-monitor.on{color:var(--monitor);background:var(--monitor-bg);border-color:var(--monitor-br)}
+
+/* ── CANDIDATE CARDS ── */
+.cards{display:flex;flex-direction:column;gap:12px}
+
+.card{border:1px solid var(--bd);border-radius:10px;background:var(--sf);overflow:hidden;transition:border-color .2s,box-shadow .2s;animation:fadein .3s ease both}
+.card:hover{border-color:var(--bd2);box-shadow:0 2px 20px rgba(0,0,0,.3)}
+.card.verdict-STRONG{border-left:4px solid var(--strong)}
+.card.verdict-WATCH{border-left:4px solid var(--watch)}
+.card.verdict-MONITOR{border-left:4px solid var(--monitor)}
+.card.verdict-SKIP{border-left:4px solid var(--skip);opacity:.75}
+.card.verdict-MOVER{border-left:4px solid var(--ac)}
+.new-criteria-badge{font-family:'JetBrains Mono',monospace;font-size:8.5px;font-weight:700;padding:2px 7px;border-radius:4px;background:var(--ac3);color:var(--ac);border:1px solid var(--ac2);letter-spacing:.04em}
+.v-MOVER{background:var(--ac3);color:var(--ac);border:1px solid var(--ac2)}
+
+/* Card header */
+.ch{display:flex;align-items:center;gap:12px;padding:12px 16px 10px;border-bottom:1px solid var(--bd);flex-wrap:wrap}
+.ch-sym{font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;color:var(--ac);cursor:pointer;border-bottom:1px dashed var(--ac2);border-radius:3px;padding:1px 4px;transition:all .15s}
+.ch-sym:hover{color:#fff;background:var(--ac);border-bottom-color:transparent}
+.ch-name{font-size:12px;color:var(--txd);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ch-timing{font-family:'JetBrains Mono',monospace;font-size:9px;padding:2px 7px;border-radius:4px;border:1px solid var(--bd2);color:var(--txd)}
+.ch-timing.bmo{background:var(--gnbg);color:var(--gn);border-color:var(--gnbr)}
+.ch-timing.amc{background:var(--pubg);color:var(--pu);border-color:var(--pu)22}
+.ch-timing.tns{background:var(--orbg);color:var(--or);border-color:var(--gdbr)}
+.verdict-badge{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:.08em;padding:3px 9px;border-radius:5px}
+.v-STRONG{background:var(--strong-bg);color:var(--strong);border:1px solid var(--strong-br)}
+.v-WATCH{background:var(--watch-bg);color:var(--watch);border:1px solid var(--watch-br)}
+.v-MONITOR{background:var(--monitor-bg);color:var(--monitor);border:1px solid var(--monitor-br)}
+.v-SKIP{background:var(--skip-bg);color:var(--skip);border:1px solid var(--skip-br)}
+.setup-badge{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;background:var(--ac3);color:var(--ac);border:1px solid var(--ac2)}
+.magna-score{font-family:'JetBrains Mono',monospace;font-size:10px;display:flex;align-items:center;gap:2px}
+.ms-dot{width:8px;height:8px;border-radius:50%}
+.ms-on{background:var(--gn)}
+.ms-off{background:var(--bd2)}
+
+/* Price row */
+.pr{display:flex;gap:0;border-bottom:1px solid var(--bd);background:var(--sf2)}
+.pr-cell{flex:1;padding:7px 14px;border-right:1px solid var(--bd);display:flex;flex-direction:column;gap:2px}
+.pr-cell:last-child{border-right:none}
+.pr-lbl{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--txd)}
+.pr-val{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700}
+.pr-val.up{color:var(--gn)}
+.pr-val.dn{color:var(--rd)}
+.pr-val.nu{color:var(--txd)}
+.gap-bar{height:4px;border-radius:2px;margin-top:3px;overflow:hidden;background:var(--bd);max-width:80px}
+.gap-bar-fill{height:100%;border-radius:2px}
+
+/* MAGNA53 criteria grid */
+.crit-grid{display:grid;grid-template-columns:repeat(5,1fr);border-bottom:1px solid var(--bd)}
+.crit{padding:9px 12px;border-right:1px solid var(--bd);display:flex;flex-direction:column;gap:3px}
+.crit:last-child{border-right:none}
+.crit-head{display:flex;align-items:center;gap:5px}
+.crit-key{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700}
+.crit-name{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--txd);letter-spacing:.04em;text-transform:uppercase}
+.crit-icon{font-size:13px;flex-shrink:0}
+.crit-detail{font-size:10px;color:var(--txd);line-height:1.4;margin-top:2px}
+.crit.pass .crit-key{color:var(--gn)}
+.crit.pass .crit-icon::after{content:'✅'}
+.crit.fail .crit-key{color:var(--txd)}
+.crit.fail .crit-icon::after{content:'❌'}
+.crit.partial .crit-key{color:var(--or)}
+.crit.partial .crit-icon::after{content:'⚠️'}
+
+/* EPS/Rev data row */
+.data-row{display:flex;gap:0;border-bottom:1px solid var(--bd);background:var(--sf3)}
+.dr-cell{flex:1;padding:6px 12px;border-right:1px solid var(--bd);display:flex;flex-direction:column;gap:2px}
+.dr-cell:last-child{border-right:none}
+.dr-lbl{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:var(--txd)}
+.dr-val{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600}
+.dr-val.pos{color:var(--gn)}.dr-val.neg{color:var(--rd)}.dr-val.neu{color:var(--tx)}
+
+/* Story footer */
+.cf{padding:10px 16px;display:flex;align-items:flex-start;gap:10px}
+.cf-story{font-size:11.5px;color:var(--txd);line-height:1.6;flex:1}
+.cf-story strong{color:var(--tx)}
+.cf-actions{display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap}
+.btn{font-family:'JetBrains Mono',monospace;font-size:9.5px;padding:4px 10px;border-radius:5px;border:1px solid var(--bd2);background:var(--sf2);color:var(--txd);cursor:pointer;transition:all .15s;text-decoration:none;display:inline-block}
+.btn:hover{color:var(--ac);border-color:var(--ac)}
+.btn-tv{background:var(--ac3);color:var(--ac);border-color:var(--ac2)}
+.btn-tv:hover{background:var(--ac);color:#fff}
+
+/* Empty state */
+.empty{padding:60px 20px;text-align:center;color:var(--txd);font-family:'JetBrains Mono',monospace;font-size:12px}
+.empty-ico{font-size:36px;display:block;margin-bottom:12px;opacity:.4}
+
+/* BMO / AMC section headers */
+.timing-hdr{display:flex;align-items:center;gap:10px;padding:6px 0 8px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--txd)}
+.timing-hdr::before,.timing-hdr::after{content:'';flex:1;height:1px;background:var(--bd)}
+.timing-hdr.bmo-hdr{color:var(--gn)}
+.timing-hdr.amc-hdr{color:var(--pu)}
+
+/* Loading */
+.loading{padding:60px;text-align:center;color:var(--txd);font-family:'JetBrains Mono',monospace;font-size:12px}
+.spin{display:inline-block;width:16px;height:16px;border:2px solid var(--bd2);border-top-color:var(--ac);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:8px}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* No data day */
+.no-data{padding:40px;text-align:center;color:var(--txd);font-family:'JetBrains Mono',monospace;font-size:11px;border:1px solid var(--bd);border-radius:8px}
+
+@media(max-width:900px){
+  .layout{grid-template-columns:1fr}
+  .sb{position:static;max-height:none;border-right:none;border-bottom:1px solid var(--bd)}
+  .crit-grid{grid-template-columns:repeat(2,1fr) 1fr}
+  .pr{flex-wrap:wrap}
+  .pr-cell{min-width:100px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">NYSE <span>/</span> NTRT·MTRT</div>
+  <div class="nav">
+    
+    
+    
+    <a class="nl" href="index.html">🧭 MM</a>
+    <a class="nl on" href="ntrt.html">⚡ NTRT</a>
+    <a class="nl" href="ep.html">🎯 EP</a><a class="nl" href="news.html">📰 News</a>
+    
+  </div>
+  <div class="hs"></div>
+  <div class="tog" onclick="tog()" title="Toggle theme">
+    <span id="ti">🌙</span>
+    <div class="tt"><div class="tk"></div></div>
+    <span id="tl">Dark</span>
+  </div>
+  <div id="upd">—</div>
+</header>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sb">
+    <div class="sb-hdr">Scan History</div>
+    <div class="cnav">
+      <button class="cnb" onclick="pm()">‹ Prev</button>
+      <button class="cnb" onclick="nm()">Next ›</button>
+    </div>
+    <div id="datelist"></div>
+
+    <div class="sb-div"></div>
+    <div class="sb-hdr">MAGNA53 Framework</div>
+    <div class="sb-ref">
+      <strong>M — Massive</strong>
+      <div class="sb-crit"><span class="sb-crit-icon">📈</span><span>EPS growth ≥100% · Rev growth ≥100% · EPS surprise ≥100% · 2Q rev ≥29%</span></div>
+      <br>
+      <strong>G — Gap Up</strong>
+      <div class="sb-crit"><span class="sb-crit-icon">🚀</span><span>≥4% gap on earnings day · Vol ≥100K premarket/AH</span></div>
+      <br>
+      <strong>N — Neglect</strong>
+      <div class="sb-crit"><span class="sb-crit-icon">👁</span><span>Financial · Price · Volume · News · Ownership neglect (&lt;20–30 institutions)</span></div>
+      <br>
+      <strong>A — Acceleration</strong>
+      <div class="sb-crit"><span class="sb-crit-icon">⚡</span><span>Rev acceleration ≥25% · OR 2Q of rev growth ≥29%</span></div>
+      <br>
+      <strong>3 — Analyst Upgrades</strong>
+      <div class="sb-crit"><span class="sb-crit-icon">🏦</span><span>≥3 price target raises — fuels multi-day momentum</span></div>
+      <br>
+      <strong>Setup Types</strong>
+      <div class="sb-crit"><span class="sb-crit-icon">A</span><span>Growth Ignition — highest quality</span></div>
+      <div class="sb-crit"><span class="sb-crit-icon">B</span><span>Massive Earnings Shock — EPS/Rev explosion</span></div>
+      <div class="sb-crit"><span class="sb-crit-icon">C</span><span>Analyst Driven — PT hikes create runners</span></div>
+    </div>
+
+    <div class="sb-div"></div>
+    <div class="sb-hdr">Entry Guide</div>
+    <div class="sb-ref">
+      <div class="sb-crit"><span class="sb-crit-icon">🔴</span><span><strong>AH:</strong> Best price · highest risk</span></div>
+      <div class="sb-crit"><span class="sb-crit-icon">🟡</span><span><strong>PM:</strong> Early entry · many fade</span></div>
+      <div class="sb-crit"><span class="sb-crit-icon">🟢</span><span><strong>Open:</strong> Standard · 2.5% stop</span></div>
+      <div class="sb-crit"><span class="sb-crit-icon">⚪</span><span><strong>+15min:</strong> Lower risk · may miss spike</span></div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main>
+    <div id="main-content"><div class="loading"><span class="spin"></span>Loading NTRT screen…</div></div>
+  </main>
+
+</div>
+
+<script>
+const DATA_URL = 'ntrt_data.json';
+let allDays = [], selDate = null;
+let activeFilter = 'ALL';
+let cY = new Date().getFullYear(), cM = new Date().getMonth();
+
+// ── Theme ──────────────────────────────────────────────────────────────────
+function tog(){
+  const h=document.documentElement,d=h.getAttribute('data-theme')==='dark',n=d?'light':'dark';
+  h.setAttribute('data-theme',n);
+  document.getElementById('ti').textContent=d?'☀️':'🌙';
+  document.getElementById('tl').textContent=d?'Light':'Dark';
+  localStorage.setItem('psx-mm-theme',n);
+}
+(()=>{
+  const s=localStorage.getItem('psx-mm-theme');
+  if(s){document.documentElement.setAttribute('data-theme',s);document.getElementById('ti').textContent=s==='light'?'☀️':'🌙';document.getElementById('tl').textContent=s==='light'?'Light':'Dark';}
+})();
+
+// ── TradingView ─────────────────────────────────────────────────────────────
+function openTV(sym){if(!sym)return;window.open(`https://www.tradingview.com/chart/?symbol=${sym.toUpperCase()}`,'_blank','noopener,noreferrer');}
+
+// ── Helpers ─────────────────────────────────────────────────────────────────
+function fmtDate(s){
+  try{return new Date(s+'T00:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});}
+  catch{return s;}
+}
+function fmtDateShort(s){
+  try{return new Date(s+'T00:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});}
+  catch{return s;}
+}
+function fmtNum(v,dec=2){
+  if(v==null)return'—';
+  return Number(v).toLocaleString('en-US',{minimumFractionDigits:dec,maximumFractionDigits:dec});
+}
+function fmtVol(v){
+  if(v==null)return'—';
+  if(v>=1e9)return(v/1e9).toFixed(2)+'B';
+  if(v>=1e6)return(v/1e6).toFixed(1)+'M';
+  if(v>=1e3)return(v/1e3).toFixed(0)+'K';
+  return String(v);
+}
+function fmtMktCap(v){
+  if(v==null)return'—';
+  if(v>=1e12)return'$'+(v/1e12).toFixed(2)+'T';
+  if(v>=1e9)return'$'+(v/1e9).toFixed(1)+'B';
+  if(v>=1e6)return'$'+(v/1e6).toFixed(0)+'M';
+  return'$'+v;
+}
+function pctClass(v){
+  if(v==null)return'nu';
+  return v>0?'up':v<0?'dn':'nu';
+}
+function pctSign(v){
+  if(v==null)return'—';
+  return(v>0?'+':'')+v.toFixed(1)+'%';
+}
+
+// ── Sidebar date list ────────────────────────────────────────────────────────
+function renderDateList(){
+  const el=document.getElementById('datelist');
+  if(!allDays.length){el.innerHTML='<div style="padding:10px 14px;font-family:JetBrains Mono,monospace;font-size:9px;color:var(--txd)">No scan data found</div>';return;}
+  let h='';
+  [...allDays].reverse().forEach(day=>{
+    const cands=day.candidates||[];
+    const strong=cands.filter(c=>c.verdict==='STRONG').length;
+    const watch=cands.filter(c=>c.verdict==='WATCH').length;
+    const isSel=day.date===selDate;
+    h+=`<div class="rdi${isSel?' sl':''}" onclick="pickDate('${day.date}')">
+      <div class="rdi-date">${fmtDateShort(day.date)}</div>
+      <div class="rdi-meta">${day.total_earnings||0} earnings · ${cands.length} scanned</div>
+      <div class="rdi-badges">
+        ${strong?`<span class="vb vb-strong">⚡${strong} STRONG</span>`:''}
+        ${watch?`<span class="vb vb-watch">👁 ${watch} WATCH</span>`:''}
+        ${(!strong&&!watch)?'<span class="vb" style="background:var(--sf3);color:var(--txd);border:1px solid var(--bd)">No hits</span>':''}
+      </div>
+    </div>`;
+  });
+  el.innerHTML=h;
+}
+
+function pm(){
+  const days=[...allDays].map(d=>d.date).sort();
+  const idx=days.indexOf(selDate);
+  if(idx>0)pickDate(days[idx-1]);
+}
+function nm(){
+  const days=[...allDays].map(d=>d.date).sort();
+  const idx=days.indexOf(selDate);
+  if(idx<days.length-1)pickDate(days[idx+1]);
+}
+
+function pickDate(date){
+  selDate=date;
+  renderDateList();
+  renderMain();
+}
+
+// ── Score dots ───────────────────────────────────────────────────────────────
+function scoreDots(score){
+  let h='<div class="magna-score">';
+  for(let i=0;i<5;i++){
+    h+=`<div class="ms-dot ${i<score?'ms-on':'ms-off'}"></div>`;
+  }
+  h+=`<span style="font-family:'JetBrains Mono',monospace;font-size:8.5px;color:var(--txd);margin-left:3px">${score}/5</span>`;
+  h+='</div>';
+  return h;
+}
+
+// ── Gap bar ──────────────────────────────────────────────────────────────────
+function gapBar(pct){
+  if(pct==null)return'';
+  const abs=Math.min(Math.abs(pct),50);
+  const w=(abs/50*100).toFixed(0);
+  const col=pct>0?'var(--gn)':'var(--rd)';
+  return`<div class="gap-bar"><div class="gap-bar-fill" style="width:${w}%;background:${col}"></div></div>`;
+}
+
+// ── Render one candidate card ─────────────────────────────────────────────────
+function renderCard(c){
+  const timing=c.timing||'TNS';
+  const timingCls=timing==='BMO'?'bmo':timing==='AMC'?'amc':'tns';
+  const timingLabel=timing==='BMO'?'▲ Before Open':timing==='AMC'?'▼ After Close':'TBD';
+  const setups=(c.setup_types||[]).join(' + ')||'—';
+  const gap=c.gap_pct;
+  const gapDir=gap>0?'+':gap<0?'':' ';
+
+  // MAGNA53 criteria
+  const criteria=[
+    {key:'M',name:'Massive',   pass:c.magna_m, detail:c.magna_m_detail},
+    {key:'G',name:'Gap',       pass:c.magna_g, detail:c.magna_g_detail},
+    {key:'N',name:'Neglect',   pass:c.magna_n, detail:c.magna_n_detail, partial:c.neglect_strength==='partial'},
+    {key:'A',name:'Accel.',    pass:c.magna_a, detail:c.magna_a_detail},
+    {key:'3',name:'Upgrades',  pass:c.magna_3, detail:c.magna_3_detail},
+  ];
+
+  let critH='<div class="crit-grid">';
+  for(const cr of criteria){
+    const cls=cr.pass?(cr.partial?'partial':'pass'):'fail';
+    critH+=`<div class="crit ${cls}">
+      <div class="crit-head">
+        <span class="crit-icon"></span>
+        <span class="crit-key">${cr.key}</span>
+        <span class="crit-name">${cr.name}</span>
+      </div>
+      <div class="crit-detail">${cr.detail||'—'}</div>
+    </div>`;
+  }
+  critH+='</div>';
+
+  // EPS / Revenue data row
+  const epsSurp=c.eps_surprise;
+  const epsGrow=c.eps_growth;
+  const revGrow=c.rev_growth;
+  const revGrow2=c.rev_growth_q2;
+
+  let dataH=`<div class="data-row">
+    <div class="dr-cell">
+      <div class="dr-lbl">EPS Actual</div>
+      <div class="dr-val neu">${c.eps_actual!=null?'$'+fmtNum(c.eps_actual,2):'—'}</div>
+    </div>
+    <div class="dr-cell">
+      <div class="dr-lbl">EPS Estimate</div>
+      <div class="dr-val neu">${c.eps_estimate!=null?'$'+fmtNum(c.eps_estimate,2):'—'}</div>
+    </div>
+    <div class="dr-cell">
+      <div class="dr-lbl">EPS Surprise</div>
+      <div class="dr-val ${pctClass(epsSurp)}">${epsSurp!=null?pctSign(epsSurp):'—'}</div>
+    </div>
+    <div class="dr-cell">
+      <div class="dr-lbl">EPS Growth YoY</div>
+      <div class="dr-val ${pctClass(epsGrow)}">${epsGrow!=null?pctSign(epsGrow):'—'}</div>
+    </div>
+    <div class="dr-cell">
+      <div class="dr-lbl">Rev Growth YoY</div>
+      <div class="dr-val ${pctClass(revGrow)}">${revGrow!=null?pctSign(revGrow):'—'}</div>
+    </div>
+    <div class="dr-cell">
+      <div class="dr-lbl">Prev Q Rev Growth</div>
+      <div class="dr-val ${pctClass(revGrow2)}">${revGrow2!=null?pctSign(revGrow2):'—'}</div>
+    </div>
+  </div>`;
+
+  // External links
+  const sym=c.ticker;
+  const tvUrl=`https://www.tradingview.com/chart/?symbol=${sym}`;
+  const ewUrl=`https://www.earningswhispers.com/stocks/${sym.toLowerCase()}`;
+  const zbUrl=`https://www.zacks.com/stock/quote/${sym}?q=${sym}`;
+
+  return`<div class="card verdict-${c.verdict}">
+    <!-- Header -->
+    <div class="ch">
+      <span class="ch-sym" onclick="openTV('${sym}')" title="Open on TradingView">${sym}</span>
+      <span class="ch-name">${c.company||'—'}</span>
+      <span class="ch-timing ${timingCls}">${timingLabel}</span>
+      <span class="verdict-badge v-${c.verdict}">${c.verdict==='STRONG'?'⚡ ':c.verdict==='WATCH'?'👁 ':c.verdict==='MONITOR'?'📊 ':c.verdict==='MOVER'?'🚀 ':'🚫 '}${c.verdict}</span>
+      ${(c.setup_types||[]).length?`<span class="setup-badge">Setup ${setups}</span>`:''}
+      ${c.is_new_criteria_mover?`<span class="new-criteria-badge">🚀 NEW CRITERIA${c.new_criteria_passes_pct&&c.new_criteria_passes_dol?' (4%+$5)':c.new_criteria_passes_pct?' (4%+)':' ($5+)'}</span>`:''}
+      ${scoreDots(c.magna_score)}
+    </div>
+
+    <!-- New Criteria detail strip (if applicable) -->
+    ${c.is_new_criteria_mover?`<div style="font-family:'JetBrains Mono',monospace;font-size:9px;padding:5px 10px;background:var(--ac3);border-bottom:1px solid var(--ac2);color:var(--ac);display:flex;gap:12px;flex-wrap:wrap">
+      <span>📍 Session: <b>${c.session||'—'}</b></span>
+      ${c.session_chgpct!=null?`<span>Move: <b>${c.session_chgpct>0?'+':''}${c.session_chgpct.toFixed(1)}%</b></span>`:''}
+      ${c.session_chg!=null?`<span>$-Move: <b>${c.session_chg>0?'+':''}$${Math.abs(c.session_chg).toFixed(2)}</b></span>`:''}
+      <span>Trigger: ${c.new_criteria_passes_pct?'<b>≥4% ✓</b>':''} ${c.new_criteria_passes_dol?'<b>≥$5 ✓</b>':''}</span>
+      <span style="color:var(--txd)">MAGNA53 score: ${c.magna_score}/5 — <b>${c.verdict}</b></span>
+    </div>`:''}
+
+    <!-- Price / Gap row -->
+    <div class="pr">
+      <div class="pr-cell">
+        <div class="pr-lbl">Price</div>
+        <div class="pr-val neu">${c.price!=null?'$'+fmtNum(c.price,2):'—'}</div>
+      </div>
+      <div class="pr-cell">
+        <div class="pr-lbl">Prev Close</div>
+        <div class="pr-val nu">${c.prev_close!=null?'$'+fmtNum(c.prev_close,2):'—'}</div>
+      </div>
+      <div class="pr-cell">
+        <div class="pr-lbl">Gap %</div>
+        <div class="pr-val ${gap!=null?(gap>=4?'up':gap<=-4?'dn':'nu'):'nu'}">${gap!=null?gapDir+gap.toFixed(1)+'%':'—'}</div>
+        ${gapBar(gap)}
+      </div>
+      <div class="pr-cell">
+        <div class="pr-lbl">Volume</div>
+        <div class="pr-val ${c.volume&&c.volume>=100000?'up':'nu'}">${fmtVol(c.volume)}</div>
+      </div>
+      <div class="pr-cell">
+        <div class="pr-lbl">Mkt Cap</div>
+        <div class="pr-val nu">${fmtMktCap(c.market_cap)}</div>
+      </div>
+      <div class="pr-cell">
+        <div class="pr-lbl">Annual Rev</div>
+        <div class="pr-val nu">${fmtMktCap(c.annual_revenue)}</div>
+      </div>
+    </div>
+
+    <!-- MAGNA53 criteria -->
+    ${critH}
+
+    <!-- EPS/Rev data -->
+    ${dataH}
+
+    <!-- Story + actions -->
+    <div class="cf">
+      <div class="cf-story"><strong>Story:</strong> ${c.story||'Insufficient data for narrative.'}</div>
+      <div class="cf-actions">
+        <a class="btn btn-tv" onclick="openTV('${sym}')" title="TradingView chart">📈 Chart</a>
+        <a class="btn" href="${ewUrl}" target="_blank" rel="noopener" title="Earnings Whispers">EW</a>
+        <a class="btn" href="${zbUrl}" target="_blank" rel="noopener" title="Zacks">Zacks</a>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── Render summary table ──────────────────────────────────────────────────────
+function renderSummaryTable(candidates){
+  if(!candidates.length)return'';
+  let h=`<div style="border:1px solid var(--bd);border-radius:8px;overflow:hidden;margin-bottom:16px">
+    <table style="width:100%;border-collapse:collapse;font-family:'JetBrains Mono',monospace;font-size:10.5px">
+    <thead>
+      <tr style="background:var(--sf2);border-bottom:2px solid var(--bd2)">
+        <th style="padding:7px 12px;text-align:left;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--txd)">Ticker</th>
+        <th style="padding:7px 12px;text-align:left;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--txd)">Setup</th>
+        <th style="padding:7px 12px;text-align:right;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--txd)">Gap</th>
+        <th style="padding:7px 12px;text-align:right;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--txd)">EPS Surprise</th>
+        <th style="padding:7px 12px;text-align:right;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--txd)">Rev Growth</th>
+        <th style="padding:7px 12px;text-align:center;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--txd)">Neglect</th>
+        <th style="padding:7px 12px;text-align:center;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--txd)">Score</th>
+        <th style="padding:7px 12px;text-align:center;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--txd)">Verdict</th>
+        <th style="padding:7px 12px;text-align:center;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--ac)">🚀 New</th>
+      </tr>
+    </thead>
+    <tbody>`;
+  candidates.forEach((c,i)=>{
+    const bg=i%2===0?'var(--sf)':'var(--sf2)';
+    const negStr=c.neglect_strength==='strong'?'✅ Strong':c.neglect_strength==='partial'?'⚠️ Partial':'❌ None';
+    const vStyle=`background:var(--${c.verdict.toLowerCase()}-bg);color:var(--${c.verdict.toLowerCase()});padding:1px 7px;border-radius:4px;font-size:9px;font-weight:700`;
+    h+=`<tr style="background:${bg};border-bottom:1px solid var(--bd)">
+      <td style="padding:6px 12px">
+        <span style="color:var(--ac);font-weight:700;cursor:pointer;border-bottom:1px dashed var(--ac2)" onclick="openTV('${c.ticker}')">${c.ticker}</span>
+        <span style="color:var(--txd);font-size:9px;margin-left:6px">${c.timing||''}</span>
+      </td>
+      <td style="padding:6px 12px;color:var(--txd)">${(c.setup_types||[]).join('+')||'—'}</td>
+      <td style="padding:6px 12px;text-align:right;color:${c.gap_pct>=4?'var(--gn)':c.gap_pct<=-4?'var(--rd)':'var(--txd)'};font-weight:600">${c.gap_pct!=null?pctSign(c.gap_pct):'—'}</td>
+      <td style="padding:6px 12px;text-align:right;color:${c.eps_surprise>100?'var(--gn)':c.eps_surprise>0?'var(--or)':'var(--rd)'};font-weight:600">${c.eps_surprise!=null?pctSign(c.eps_surprise):'—'}</td>
+      <td style="padding:6px 12px;text-align:right;color:${c.rev_growth>=25?'var(--gn)':c.rev_growth>=10?'var(--or)':'var(--txd)'};font-weight:600">${c.rev_growth!=null?pctSign(c.rev_growth):'—'}</td>
+      <td style="padding:6px 12px;text-align:center;font-size:10px">${negStr}</td>
+      <td style="padding:6px 12px;text-align:center">${scoreDots(c.magna_score)}</td>
+      <td style="padding:6px 12px;text-align:center"><span style="${vStyle}">${c.verdict}</span></td>
+      <td style="padding:6px 12px;text-align:center">${c.is_new_criteria_mover?`<span style="color:var(--ac);font-weight:700;font-size:9px">${c.new_criteria_passes_pct?'4%':''} ${c.new_criteria_passes_dol?'$5':''}</span>`:'<span style="color:var(--txm)">—</span>'}</td>
+    </tr>`;
+  });
+  h+=`</tbody></table></div>`;
+  return h;
+}
+
+// ── Render main content ───────────────────────────────────────────────────────
+function renderMain(){
+  const mc=document.getElementById('main-content');
+  const day=allDays.find(d=>d.date===selDate);
+
+  if(!day){
+    mc.innerHTML=`<div class="no-data">📭 No scan data for this date.<br><br>Run <code>python ntrt_screener.py</code> to populate.</div>`;
+    return;
+  }
+
+  const candidates=day.candidates||[];
+  const filtered=activeFilter==='ALL'?candidates:
+    activeFilter==='MOVER'?candidates.filter(c=>c.is_new_criteria_mover):
+    candidates.filter(c=>c.verdict===activeFilter);
+
+  // Stats
+  const strong=candidates.filter(c=>c.verdict==='STRONG').length;
+  const watch=candidates.filter(c=>c.verdict==='WATCH').length;
+  const monitor=candidates.filter(c=>c.verdict==='MONITOR').length;
+  const moversCount=candidates.filter(c=>c.is_new_criteria_mover).length;
+  const earningCount=day.total_earnings||candidates.length;
+
+  // Update upd
+  const scanTime=day.scanned_at?new Date(day.scanned_at).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',timeZoneName:'short'}):'—';
+  document.getElementById('upd').textContent=`Scanned: ${fmtDateShort(day.date)} · ${scanTime}`;
+
+  let h='';
+
+  // Stats strip
+  h+=`<div class="stats">
+    <div class="stat s-ac"><div class="stat-lbl">Date</div><div class="stat-val" style="font-size:11px;margin-top:2px">${fmtDateShort(day.date)}</div></div>
+    <div class="stat s-tl"><div class="stat-lbl">Earnings Reports</div><div class="stat-val">${earningCount}</div><div class="stat-sub">companies reporting</div></div>
+    <div class="stat s-ac"><div class="stat-lbl">Screened</div><div class="stat-val">${candidates.length}</div><div class="stat-sub">with data</div></div>
+    <div class="stat s-gn"><div class="stat-lbl">⚡ STRONG</div><div class="stat-val">${strong}</div><div class="stat-sub">all criteria met</div></div>
+    <div class="stat s-gd"><div class="stat-lbl">👁 WATCH</div><div class="stat-val">${watch}</div><div class="stat-sub">3-4 criteria met</div></div>
+    <div class="stat s-rd"><div class="stat-lbl">📊 MONITOR</div><div class="stat-val">${monitor}</div><div class="stat-sub">partial match</div></div>
+    <div class="stat s-ac"><div class="stat-lbl">🚀 NEW CRITERIA</div><div class="stat-val">${moversCount}</div><div class="stat-sub">pre/post movers</div></div>
+  </div>`;
+
+  // Filter tabs
+  h+=`<div class="ftabs">
+    <div class="ft${activeFilter==='ALL'?' on':''}" onclick="setFilter('ALL')">All (${candidates.length})</div>
+    <div class="ft ft-strong${activeFilter==='STRONG'?' on':''}" onclick="setFilter('STRONG')">⚡ Strong (${strong})</div>
+    <div class="ft ft-watch${activeFilter==='WATCH'?' on':''}" onclick="setFilter('WATCH')">👁 Watch (${watch})</div>
+    <div class="ft ft-monitor${activeFilter==='MONITOR'?' on':''}" onclick="setFilter('MONITOR')">📊 Monitor (${monitor})</div>
+    <div class="ft${activeFilter==='MOVER'?' on':''}" style="${activeFilter==='MOVER'?'background:var(--ac);color:#fff;':''}border-color:var(--ac2)" onclick="setFilter('MOVER')">🚀 New Criteria (${moversCount})</div>
+  </div>`;
+
+  if(!filtered.length){
+    h+=`<div class="empty"><span class="empty-ico">🔍</span>No candidates match this filter for ${fmtDateShort(day.date)}.</div>`;
+    mc.innerHTML=h;
+    return;
+  }
+
+  // Summary table
+  h+=renderSummaryTable(filtered);
+
+  // Cards grouped by timing
+  const bmo=filtered.filter(c=>c.timing==='BMO');
+  const amc=filtered.filter(c=>c.timing==='AMC');
+  const tns=filtered.filter(c=>c.timing!=='BMO'&&c.timing!=='AMC');
+
+  if(bmo.length){
+    h+=`<div class="timing-hdr bmo-hdr">🟢 Before Market Open (BMO) — ${bmo.length} stock${bmo.length!==1?'s':''}</div>`;
+    h+=`<div class="cards">`;
+    bmo.forEach(c=>{h+=renderCard(c);});
+    h+=`</div>`;
+  }
+  if(amc.length){
+    h+=`<div class="timing-hdr amc-hdr" style="margin-top:20px">🟣 After Market Close (AMC) — ${amc.length} stock${amc.length!==1?'s':''}</div>`;
+    h+=`<div class="cards">`;
+    amc.forEach(c=>{h+=renderCard(c);});
+    h+=`</div>`;
+  }
+  if(tns.length){
+    h+=`<div class="timing-hdr" style="margin-top:20px;color:var(--or)">🟡 Timing Not Specified — ${tns.length}</div>`;
+    h+=`<div class="cards">`;
+    tns.forEach(c=>{h+=renderCard(c);});
+    h+=`</div>`;
+  }
+
+  // Disclaimer
+  h+=`<div style="margin-top:24px;padding:12px 16px;background:var(--sf);border:1px solid var(--bd);border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--txd);line-height:1.7">
+    <strong style="color:var(--tx)">⚠ Disclaimer:</strong> This screen is for educational research only. Not financial advice.
+    Post-gap analysis — NTRT entry opportunity may have passed at these prices.
+    Always verify EPS/revenue data against primary sources before trading.
+    Apply 2.5% stop loss. Default day-trade; upgrade to multi-day only with strong story + institutional accumulation.
+  </div>`;
+
+  mc.innerHTML=h;
+}
+
+function setFilter(f){
+  activeFilter=f;
+  renderMain();
+}
+
+// ── Load data ─────────────────────────────────────────────────────────────────
+async function load(){
+  try{
+    const res=await fetch(DATA_URL+'?t='+Date.now());
+    if(!res.ok)throw new Error(`HTTP ${res.status}`);
+    allDays=await res.json();
+    if(!Array.isArray(allDays)||!allDays.length) throw new Error('empty');
+    const sorted=[...allDays].sort((a,b)=>a.date>b.date?1:-1);
+    selDate=sorted[sorted.length-1].date;
+    allDays=sorted;
+    renderDateList();
+    renderMain();
+  }catch(e){
+    // ntrt_data.json not found or empty — load embedded demo data
+    console.warn('[ntrt] No live data, loading demo:', e.message);
+    loadDemo();
+  }
+}
+
+function loadDemo(){
+  const today=new Date().toISOString().slice(0,10);
+  allDays=[{
+    date:today,
+    scanned_at:new Date().toISOString(),
+    market:'DEMO',
+    total_earnings:14,
+    total_screened:5,
+    pre_post_movers_count:2,
+    candidates:[
+      {
+        ticker:'FSLY',company:'Fastly Inc.',timing:'AMC',date:today,
+        price:12.45,prev_close:8.90,gap_pct:39.9,volume:42000000,market_cap:1650000000,
+        eps_actual:0.12,eps_estimate:0.06,eps_surprise:100.0,eps_growth:null,
+        rev_actual:172600000,rev_estimate:160000000,rev_growth:23.0,rev_growth_q2:18.5,annual_revenue:680000000,
+        magna_m:true,magna_m_detail:'EPS surprise +100% · 2Q rev ≥29%',
+        magna_g:true,magna_g_detail:'Gap +39.9%, Vol 42.0M',
+        magna_n:true,magna_n_detail:'Mid-cap (<$2B)',
+        magna_a:true,magna_a_detail:'Rev growth: +23.0% (prev Q: +18.5%)',
+        magna_3:true,magna_3_detail:'William Blair upgraded to Buy',
+        magna_score:5,setup_a:true,setup_b:true,setup_c:true,setup_types:['B','C'],
+        analyst_upgrades:2,story:'EPS surprise: +100% · Revenue growth: +23.0% YoY · Gap: +39.9% · Neglect: strong · NEW CRITERIA: ≥4% move (+39.9%) & ≥$5 move',
+        verdict:'STRONG',neglect_strength:'strong',
+        is_new_criteria_mover:true,new_criteria_passes_pct:true,new_criteria_passes_dol:true,
+        session:'Post-Market',session_chgpct:39.9,session_chg:3.55
+      },
+      {
+        ticker:'ASTH',company:'Asthma Holdings Inc.',timing:'BMO',date:today,
+        price:6.40,prev_close:4.80,gap_pct:33.3,volume:8500000,market_cap:1100000000,
+        eps_actual:0.22,eps_estimate:0.11,eps_surprise:108.0,eps_growth:220.0,
+        rev_actual:null,rev_estimate:null,rev_growth:43.0,rev_growth_q2:38.0,annual_revenue:180000000,
+        magna_m:true,magna_m_detail:'EPS surprise +108% · EPS growth +220% YoY',
+        magna_g:true,magna_g_detail:'Gap +33.3%, Vol 8.5M',
+        magna_n:true,magna_n_detail:'Small-cap (<$500M) · Low institutional coverage',
+        magna_a:true,magna_a_detail:'Rev growth: +43.0% (prev Q: +38.0%)',
+        magna_3:false,magna_3_detail:'Some analyst coverage but <3 upgrades',
+        magna_score:4,setup_a:true,setup_b:true,setup_c:false,setup_types:['A','B'],
+        analyst_upgrades:1,story:'EPS surprise: +108% · Revenue growth: +43.0% YoY · Gap: +33.3% · Neglect: strong',
+        verdict:'STRONG',neglect_strength:'strong',
+        is_new_criteria_mover:true,new_criteria_passes_pct:true,new_criteria_passes_dol:true,
+        session:'Pre-Market',session_chgpct:33.3,session_chg:1.60
+      },
+      {
+        ticker:'VIAV',company:'Viavi Solutions Inc.',timing:'BMO',date:today,
+        price:11.20,prev_close:9.03,gap_pct:24.0,volume:18000000,market_cap:2100000000,
+        eps_actual:0.23,eps_estimate:0.20,eps_surprise:17.0,eps_growth:81.0,
+        rev_actual:310000000,rev_estimate:295000000,rev_growth:36.0,rev_growth_q2:28.0,annual_revenue:1100000000,
+        magna_m:true,magna_m_detail:'EPS growth +81% YoY · Rev growth +36% YoY',
+        magna_g:true,magna_g_detail:'Gap +24.0%, Vol 18.0M',
+        magna_n:true,magna_n_detail:'Mid-cap (<$2B) · Long sideways base',
+        magna_a:true,magna_a_detail:'Rev growth: +36.0% (prev Q: +28.0%)',
+        magna_3:true,magna_3_detail:'Multiple analyst upgrades',
+        magna_score:5,setup_a:true,setup_b:false,setup_c:false,setup_types:['A'],
+        analyst_upgrades:3,story:'EPS surprise: +17% · Revenue growth: +36.0% YoY · Gap: +24.0% · Neglect: strong',
+        verdict:'STRONG',neglect_strength:'strong',
+        is_new_criteria_mover:false,new_criteria_passes_pct:false,new_criteria_passes_dol:true,
+        session:'Pre-Market',session_chgpct:24.0,session_chg:2.17
+      },
+      {
+        ticker:'XYZ',company:'XYZ Corp — Pre-Market Mover',timing:'Pre-Market',date:today,
+        price:18.50,prev_close:17.10,gap_pct:8.2,volume:250000,market_cap:420000000,
+        eps_actual:null,eps_estimate:null,eps_surprise:null,eps_growth:null,
+        rev_actual:null,rev_estimate:null,rev_growth:null,rev_growth_q2:null,annual_revenue:null,
+        magna_m:false,magna_m_detail:'No earnings data in pre-market',
+        magna_g:true,magna_g_detail:'Gap +8.2%, Vol 250K',
+        magna_n:true,magna_n_detail:'Small-cap (<$500M) · Large gap signals neglect',
+        magna_a:false,magna_a_detail:'No revenue data',
+        magna_3:false,magna_3_detail:'Needs FMP key',
+        magna_score:2,setup_a:false,setup_b:false,setup_c:false,setup_types:[],
+        analyst_upgrades:0,story:'UP 8.2% in Pre-Market session · $1.40 absolute move · Vol 250K · ✓ MAGNA-G confirmed',
+        verdict:'MOVER',neglect_strength:'strong',
+        is_new_criteria_mover:true,new_criteria_passes_pct:true,new_criteria_passes_dol:false,
+        session:'Pre-Market',session_chgpct:8.2,session_chg:1.40
+      },
+      {
+        ticker:'AVGO',company:'Broadcom Inc.',timing:'AMC',date:today,
+        price:214.50,prev_close:204.90,gap_pct:4.7,volume:22000000,market_cap:1000000000000,
+        eps_actual:1.60,eps_estimate:1.48,eps_surprise:8.0,eps_growth:29.0,
+        rev_actual:19300000000,rev_estimate:18900000000,rev_growth:29.0,rev_growth_q2:25.0,annual_revenue:72000000000,
+        magna_m:true,magna_m_detail:'AI revenue +106% YoY to $8.4B · Total rev +29%',
+        magna_g:true,magna_g_detail:'Gap +4.7%, Vol 22.0M',
+        magna_n:false,magna_n_detail:'$1T market cap — institutional neglect very limited',
+        magna_a:true,magna_a_detail:'Rev growth: +29.0% (prev Q: +25.0%)',
+        magna_3:true,magna_3_detail:'Bernstein PT raised — multiple others expected',
+        magna_score:4,setup_a:false,setup_b:false,setup_c:false,setup_types:['B'],
+        analyst_upgrades:4,story:'Revenue growth: +29.0% YoY · Gap: +4.7% · NEW CRITERIA: ≥4% move & ≥$5 move',
+        verdict:'WATCH',neglect_strength:'none',
+        is_new_criteria_mover:true,new_criteria_passes_pct:true,new_criteria_passes_dol:true,
+        session:'Post-Market',session_chgpct:4.7,session_chg:9.60
+      }
+    ]
+  }];
+  selDate=today;
+  renderDateList();
+  renderMain();
+  // Show demo banner
+  document.getElementById('main-content').insertAdjacentHTML('afterbegin',
+    `<div style="font-family:'JetBrains Mono',monospace;font-size:9px;padding:7px 12px;background:var(--or-bg,#2a1f00);border:1px solid var(--or-br,#5a3e00);color:var(--or,#f59e0b);border-radius:6px;margin-bottom:12px">
+      ⚠ Showing <b>demo data</b> — <code>ntrt_data.json</code> not found in repo.
+      Run <code>python ntrt_screener.py --demo</code> then commit the JSON to see live scans.
+    </div>`
+  );
+}
+load();
+</script>
+</body>
+</html>

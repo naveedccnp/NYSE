@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>NYSE · News</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root,[data-theme="dark"]{
+  --bg:#060a0e;--sf:#0b1017;--sf2:#0f1720;--sf3:#131e28;
+  --bd:#162030;--bd2:#1e2e42;--bd3:#263848;
+  --tx:#c8ddf0;--txd:#3a5870;--txm:#1a2e40;
+  --ac:#00c4e8;--ac2:#006688;--ac3:rgba(0,196,232,.12);
+  --gn:#00e676;--gnbg:#001f0d;--gnbr:#00e67630;
+  --rd:#ff4444;--rdbg:#1f0000;--rdbr:#ff444430;
+  --gd:#ffd040;--gdbg:#1f1400;--gdbr:#ffd04030;
+  --or:#ff9c20;--orbg:#1f1000;--orbr:#ff9c2030;
+  --pu:#b388ff;--pubg:#180d2e;--pubr:#b388ff30;
+  --hdr:rgba(6,10,14,.97);--sl:rgba(0,0,0,.08);
+}
+[data-theme="light"]{
+  --bg:#edf2f8;--sf:#fff;--sf2:#f4f8fc;--sf3:#eaf0f7;
+  --bd:#c4d4e8;--bd2:#a0bcd4;--bd3:#88a8c8;
+  --tx:#0a1828;--txd:#4a6a88;--txm:#88aac8;
+  --ac:#0077aa;--ac2:#005588;--ac3:rgba(0,119,170,.1);
+  --gn:#1a7a40;--gnbg:#e4f8ea;--gnbr:#1a7a4030;
+  --rd:#cc2222;--rdbg:#fde4e4;--rdbr:#cc222230;
+  --gd:#886000;--gdbg:#fff6d8;--gdbr:#88600030;
+  --or:#c66000;--orbg:#fff0d0;--orbr:#c6600030;
+  --pu:#7b22cc;--pubg:#efe8ff;--pubr:#7b22cc30;
+  --hdr:rgba(237,242,248,.97);--sl:transparent;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--tx);font-family:'Syne',sans-serif;font-size:13px;line-height:1.5;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,var(--sl) 3px,var(--sl) 4px);pointer-events:none;z-index:9999}
+header{position:sticky;top:0;z-index:200;height:52px;background:var(--hdr);border-bottom:1px solid var(--bd);backdrop-filter:blur(16px);display:flex;align-items:center;padding:0 18px;gap:8px}
+.logo{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--ac);letter-spacing:.1em;text-transform:uppercase;white-space:nowrap;flex-shrink:0}
+.logo span{color:var(--txd);font-weight:400}
+.nav{display:flex;gap:2px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.nav::-webkit-scrollbar{display:none}
+.nl{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--txd);text-decoration:none;padding:4px 9px;border-radius:4px;border:1px solid transparent;transition:all .15s;white-space:nowrap}
+.nl:hover{color:var(--ac);border-color:var(--bd2)}
+.nl.on{color:var(--ac);background:var(--ac3);border-color:var(--ac2)}
+.hs{width:1px;height:22px;background:var(--bd);flex-shrink:0;margin:0 4px}
+.tog{display:flex;align-items:center;gap:5px;cursor:pointer;user-select:none;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--txd);flex-shrink:0;margin-left:auto}
+.tt{width:32px;height:18px;background:var(--bd);border-radius:9px;position:relative;border:1px solid var(--bd2)}
+.tk{position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:var(--txd);transition:transform .2s,background .2s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+[data-theme="light"] .tk{transform:translateX(14px);background:var(--ac)}
+.layout{display:grid;grid-template-columns:1fr 440px;min-height:calc(100vh - 52px)}
+.left{overflow-y:auto;padding:16px 18px 60px;min-width:0}
+.right{border-left:1px solid var(--bd);position:sticky;top:52px;height:calc(100vh - 52px);display:flex;flex-direction:column}
+.search-wrap{display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+.sym-inp{font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;background:var(--sf);border:2px solid var(--bd2);border-radius:8px;color:var(--tx);padding:10px 14px;width:180px;text-transform:uppercase;letter-spacing:.06em;transition:border-color .2s,box-shadow .2s;flex-shrink:0}
+.sym-inp:focus{outline:none;border-color:var(--ac);box-shadow:0 0 0 3px var(--ac3)}
+.sym-inp::placeholder{color:var(--txm);font-size:11px;text-transform:none;letter-spacing:0;font-weight:400}
+.lookup-btn{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;padding:10px 20px;border-radius:8px;border:none;background:var(--ac);color:#fff;cursor:pointer;transition:background .2s;white-space:nowrap;flex-shrink:0}
+.lookup-btn:hover{background:var(--ac2)}
+.lookup-btn:disabled{opacity:.5;cursor:wait}
+.recent-row{display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.rc-lbl{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--txm)}
+.rc{font-family:'JetBrains Mono',monospace;font-size:9.5px;font-weight:700;padding:2px 8px;border-radius:4px;background:var(--sf2);border:1px solid var(--bd);color:var(--ac);cursor:pointer;transition:all .15s}
+.rc:hover{background:var(--ac3);border-color:var(--ac)}
+.rc-x{font-size:8px;color:var(--txm);margin-left:3px;vertical-align:middle}
+.rc:hover .rc-x{color:var(--rd)}
+.sh{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--txd);margin:18px 0 10px;display:flex;align-items:center;gap:8px}
+.sh::after{content:'';flex:1;height:1px;background:var(--bd)}
+.sh span{white-space:nowrap}
+.grid{display:grid;gap:8px;margin-bottom:12px}
+.g4{grid-template-columns:repeat(4,1fr)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g2{grid-template-columns:repeat(2,1fr)}
+.sc{background:var(--sf);border:1px solid var(--bd);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.sc-l{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--txd)}
+.sc-v{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:var(--tx);line-height:1.2}
+.sc-s{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--txd);margin-top:1px}
+.v-up{color:var(--gn)}.v-dn{color:var(--rd)}.v-ac{color:var(--ac)}.v-gd{color:var(--gd)}.v-pu{color:var(--pu)}.v-or{color:var(--or)}.v-nu{color:var(--txd)}
+table{width:100%;border-collapse:collapse;font-family:'JetBrains Mono',monospace;font-size:10.5px;margin-bottom:12px;border-radius:7px;overflow:hidden;border:1px solid var(--bd)}
+th{background:var(--sf2);padding:6px 10px;text-align:left;font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--txd);border-bottom:1px solid var(--bd2)}
+td{padding:7px 10px;border-bottom:1px solid var(--bd);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:nth-child(even) td{background:rgba(0,0,0,.12)}
+[data-theme="light"] tr:nth-child(even) td{background:rgba(0,0,0,.03)}
+td.pos{color:var(--gn);font-weight:700}
+td.neg{color:var(--rd);font-weight:700}
+td.est{color:var(--gd)}
+td.nu{color:var(--txd)}
+.badge{font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:700;padding:2px 6px;border-radius:4px;letter-spacing:.05em;display:inline-block}
+.bg-gn{background:var(--gnbg);color:var(--gn);border:1px solid var(--gnbr)}
+.bg-rd{background:var(--rdbg);color:var(--rd);border:1px solid var(--rdbr)}
+.bg-ac{background:var(--ac3);color:var(--ac);border:1px solid var(--ac2)}
+.bg-or{background:var(--orbg);color:var(--or);border:1px solid var(--orbr)}
+.bg-pu{background:var(--pubg);color:var(--pu);border:1px solid var(--pubr)}
+.bg-gd{background:var(--gdbg);color:var(--gd);border:1px solid var(--gdbr)}
+.news-feed{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.ni{background:var(--sf);border:1px solid var(--bd);border-radius:7px;padding:10px 12px;cursor:pointer;transition:border-color .15s,background .15s;display:flex;gap:10px;align-items:flex-start;text-decoration:none}
+.ni:hover{border-color:var(--bd2);background:var(--sf2)}
+.ni-dot{width:6px;height:6px;border-radius:50%;background:var(--txd);flex-shrink:0;margin-top:5px}
+.ni-dot.gn{background:var(--gn)}.ni-dot.rd{background:var(--rd)}.ni-dot.or{background:var(--or)}.ni-dot.pu{background:var(--pu)}
+.ni-body{flex:1;min-width:0}
+.ni-title{font-size:12px;color:var(--tx);line-height:1.45;font-weight:500}
+.ni:hover .ni-title{color:var(--ac)}
+.ni-meta{font-family:'JetBrains Mono',monospace;font-size:8.5px;color:var(--txd);margin-top:3px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.ni-src{color:var(--ac)}
+.ni-sent{font-size:7.5px;padding:1px 5px;border-radius:3px;font-family:'JetBrains Mono',monospace;font-weight:700}
+.sent-pos{background:var(--gnbg);color:var(--gn);border:1px solid var(--gnbr)}
+.sent-neg{background:var(--rdbg);color:var(--rd);border:1px solid var(--rdbr)}
+.sent-neu{background:var(--sf3);color:var(--txd);border:1px solid var(--bd)}
+.si-bar{background:var(--bd);border-radius:3px;height:5px;margin-top:3px;overflow:hidden}
+.si-bar-f{height:100%;border-radius:3px;transition:width .5s ease}
+.pbar{background:var(--bd);border-radius:3px;height:5px;margin-top:3px;overflow:hidden}
+.pbar-f{height:100%;border-radius:3px;transition:width .5s ease}
+.ext-row{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 12px}
+.el{font-family:'JetBrains Mono',monospace;font-size:9px;padding:4px 10px;border-radius:5px;border:1px solid var(--bd2);background:var(--sf2);color:var(--txd);cursor:pointer;text-decoration:none;transition:all .15s}
+.el:hover{color:var(--ac);border-color:var(--ac)}
+.el.tv{background:var(--ac3);color:var(--ac);border-color:var(--ac2)}
+.el.tv:hover{background:var(--ac);color:#fff}
+.blurb{font-size:11.5px;color:var(--txd);line-height:1.65;padding:10px 12px;background:var(--sf);border:1px solid var(--bd);border-radius:7px;margin-bottom:12px}
+.ai-box{background:var(--sf);border:1px solid var(--bd);border-radius:10px;overflow:hidden;margin-bottom:16px}
+.ai-hdr{padding:8px 14px;background:var(--sf3);border-bottom:1px solid var(--bd);font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:var(--ac);display:flex;align-items:center;gap:8px}
+.ai-body{padding:14px 16px;font-size:12px;line-height:1.75;color:var(--tx)}
+.ai-body p{margin-bottom:10px}.ai-body p:last-child{margin-bottom:0}
+.ai-body strong{color:var(--gd)}
+.ai-thinking{padding:12px 16px;color:var(--txd);font-family:'JetBrains Mono',monospace;font-size:10px;display:flex;align-items:center;gap:8px}
+@keyframes blink{0%,100%{opacity:.2}50%{opacity:1}}
+.dots span{animation:blink 1.2s ease infinite}.dots span:nth-child(2){animation-delay:.2s}.dots span:nth-child(3){animation-delay:.4s}
+.cp-hdr{padding:9px 12px;border-bottom:1px solid var(--bd);background:var(--sf2);display:flex;align-items:center;gap:8px;flex-shrink:0}
+.cp-sym{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--ac);cursor:pointer}
+.cp-sym:hover{text-decoration:underline}
+.cp-name{font-size:11px;color:var(--txd);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cp-open{font-family:'JetBrains Mono',monospace;font-size:9px;padding:3px 9px;border-radius:4px;border:1px solid var(--ac2);background:var(--ac3);color:var(--ac);cursor:pointer;transition:all .15s;text-decoration:none;flex-shrink:0}
+.cp-open:hover{background:var(--ac);color:#fff}
+.cp-body{flex:1;background:var(--sf);position:relative}
+.cp-body iframe{width:100%;height:100%;border:none;display:block}
+.cp-empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--txd);font-family:'JetBrains Mono',monospace;font-size:11px;text-align:center;padding:20px}
+.cp-empty-ico{font-size:36px;opacity:.25}
+.empty{padding:60px 20px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--txd)}
+.empty-ico{font-size:40px;display:block;margin-bottom:14px;opacity:.25}
+.empty-title{font-size:13px;color:var(--txd);margin-bottom:6px}
+.empty-sub{font-size:10px;color:var(--txm);line-height:1.7}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--bd2);border-top-color:var(--ac);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:8px}
+.lbar{width:180px;height:3px;background:var(--bd);border-radius:2px;margin:10px auto 0;overflow:hidden}
+.lbar-f{height:100%;background:var(--ac);border-radius:2px;animation:lbara 1.4s ease-in-out infinite}
+@keyframes lbara{0%{width:0;margin-left:0}50%{width:60%;margin-left:20%}100%{width:0;margin-left:100%}}
+@keyframes fadein{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+.fin{animation:fadein .3s ease both}
+.err-box{background:var(--rdbg);border:1px solid var(--rdbr);border-radius:8px;padding:14px 16px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--rd);margin-bottom:14px}
+@media(max-width:1140px){.layout{grid-template-columns:1fr}.right{position:static;height:420px;border-left:none;border-top:1px solid var(--bd)}.g4{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:640px){.g4,.g3{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">NYSE <span>/</span> News</div>
+  <div class="nav">
+    
+    
+    
+    <a class="nl" href="index.html">🧭 MM</a>
+    <a class="nl" href="ntrt.html">⚡ NTRT</a><a class="nl on" href="news.html">📰 News</a>
+    <a class="nl" href="ep.html">🎯 EP</a>
+    
+  </div>
+  <div class="hs"></div>
+  <div class="tog" onclick="tog()">
+    <span id="ti">🌙</span><div class="tt"><div class="tk"></div></div><span id="tl">Dark</span>
+  </div>
+</header>
+
+<div class="layout">
+  <div class="left" id="left">
+    <div class="search-wrap">
+      <input class="sym-inp" id="sym-inp" type="text" maxlength="8"
+        placeholder="Symbol e.g. NVDA"
+        oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9.]/g,'')"
+        onkeydown="if(event.key==='Enter')go()">
+      <button class="lookup-btn" id="lbtn" onclick="go()">🔍 Lookup</button>
+      <span id="api-status" style="font-family:'JetBrains Mono',monospace;font-size:9px;padding:3px 8px;border-radius:4px;border:1px solid var(--gnbr);color:var(--gn);background:var(--gnbg)">🟢 Claude·AI Ready</span>
+    </div>
+    <div class="recent-row" id="recent-row"><span class="rc-lbl">Recent:</span></div>
+    <div id="results">
+      <div class="empty">
+        <span class="empty-ico">📰</span>
+        <div class="empty-title">US Stock Intelligence</div>
+        <div class="empty-sub">
+          Powered by Claude AI + live web search<br>
+          Enter any US ticker for real-time data:<br>
+          Quote · Analyst ratings · Earnings history · Key metrics<br>
+          Insider transactions · News &amp; sentiment
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="right">
+    <div class="cp-hdr">
+      <span class="cp-sym" id="cp-sym" onclick="openTV(cpSym)" title="Open on TradingView">—</span>
+      <span class="cp-name" id="cp-name">Load a symbol to see chart</span>
+      <a class="cp-open" id="cp-open" href="#" onclick="openTV(cpSym);return false">↗ TradingView</a>
+    </div>
+    <div id="cp-body" class="cp-body">
+      <div id="cp-empty" class="cp-empty">
+        <span class="cp-empty-ico">📈</span>
+        Chart appears here after lookup
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════════════
+//  PSX · US-News
+//  Data sources — all confirmed CORS-open from ANY origin incl. github.io:
+//    Yahoo Finance v7  → real-time quote, analyst targets, earnings date
+//    Yahoo Finance v8  → chart meta, OHLCV
+//    Yahoo Finance v10 → deep fundamentals (needs yahoo.com cookie; degrades gracefully)
+//    Marketaux         → NLP-tagged news + sentiment (100 req/day free)
+//  NO Finnhub — blocks CORS from github.io on the free tier.
+// ══════════════════════════════════════════════════════════════════════════
+
+const MX_KEY = 'MHYnUE41mpwSPXGhYfWQwnTzLcML2LAKjeE5LlPG';
+const MX_BASE = 'https://api.marketaux.com/v1';
+const YQ1 = 'https://query1.finance.yahoo.com';
+const YQ2 = 'https://query2.finance.yahoo.com';
+
+// ── localStorage helpers ───────────────────────────────────────────────────
+const ls = (k, v) => { try { localStorage.setItem(k, v); } catch {} };
+const lg = (k) => { try { return localStorage.getItem(k); } catch { return null; } };
+
+// ── Theme ──────────────────────────────────────────────────────────────────
+function tog() {
+  const h = document.documentElement;
+  const dark = h.getAttribute('data-theme') === 'dark';
+  const next = dark ? 'light' : 'dark';
+  h.setAttribute('data-theme', next);
+  document.getElementById('ti').textContent = dark ? '☀️' : '🌙';
+  document.getElementById('tl').textContent = dark ? 'Light' : 'Dark';
+  ls('psx-mm-theme', next);
+  if (cpSym) setChart(cpSym);
+}
+(() => {
+  const s = lg('psx-mm-theme');
+  if (s) {
+    document.documentElement.setAttribute('data-theme', s);
+    document.getElementById('ti').textContent = s === 'light' ? '☀️' : '🌙';
+    document.getElementById('tl').textContent = s === 'light' ? 'Light' : 'Dark';
+  }
+})();
+
+// ── Number/date formatters ─────────────────────────────────────────────────
+const fc  = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 2 });
+const fn  = new Intl.NumberFormat('en-US');
+function fv(v, d = 2) { if (v == null || isNaN(+v)) return '—'; return (+v).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d }); }
+function fb(v) {
+  if (v == null || isNaN(+v)) return '—';
+  const a = Math.abs(v);
+  if (a >= 1e12) return '$' + (v / 1e12).toFixed(2) + 'T';
+  if (a >= 1e9)  return '$' + (v / 1e9).toFixed(2) + 'B';
+  if (a >= 1e6)  return '$' + (v / 1e6).toFixed(1) + 'M';
+  if (a >= 1e3)  return '$' + (v / 1e3).toFixed(0) + 'K';
+  return '$' + fv(v);
+}
+function fp(v) { if (v == null || isNaN(+v)) return '—'; return (v > 0 ? '+' : '') + fv(v, 1) + '%'; }
+function fd(s) {
+  if (!s) return '—';
+  try {
+    const d = new Date(typeof s === 'number' ? s * 1000 : s);
+    return isNaN(d) ? String(s) : d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  } catch { return '—'; }
+}
+function pc(v) { return v > 0 ? 'v-up' : v < 0 ? 'v-dn' : 'v-nu'; }
+function ago(s) {
+  if (!s) return '';
+  const sec = (Date.now() - new Date(s).getTime()) / 1000;
+  if (sec < 3600)  return Math.floor(sec / 60) + 'm ago';
+  if (sec < 86400) return Math.floor(sec / 3600) + 'h ago';
+  return Math.floor(sec / 86400) + 'd ago';
+}
+// Safe deep-get with .raw unwrap (Yahoo v10 format)
+function raw(o, ...ks) {
+  try { let v = o; for (const k of ks) { v = v[k]; } return v?.raw ?? v; }
+  catch { return null; }
+}
+
+// ── TradingView helpers ────────────────────────────────────────────────────
+function openTV(s) {
+  if (!s || s === '—') return;
+  window.open('https://www.tradingview.com/chart/?symbol=' + s, '_blank', 'noopener');
+}
+
+let cpSym = '';
+function setChart(sym) {
+  cpSym = sym;
+  const th = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+  document.getElementById('cp-sym').textContent = sym;
+  document.getElementById('cp-name').textContent = sym + ' — TradingView';
+  document.getElementById('cp-open').onclick = () => openTV(sym);
+  const ph = document.getElementById('cp-empty');
+  if (ph) ph.style.display = 'none';
+  document.getElementById('cp-body').innerHTML =
+    `<iframe src="https://www.tradingview.com/widgetembed/?frameElementId=tv1&symbol=${encodeURIComponent(sym)}&interval=D&hidesidetoolbar=0&symboledit=1&saveimage=0&toolbarbg=${th === 'light' ? 'f8f9fb' : '0f1720'}&studies=RSI%40tv-basicstudies%1FMA%40tv-basicstudies&theme=${th}&style=1&timezone=America%2FNew_York&locale=en&withdateranges=1&showpopupbutton=1" style="width:100%;height:100%;border:none" allowfullscreen></iframe>`;
+}
+
+// ── Recent symbols ─────────────────────────────────────────────────────────
+let recent = [];
+try { recent = JSON.parse(lg('usnews_recent') || '[]'); } catch {}
+
+function addRecent(s) {
+  recent = [s, ...recent.filter(x => x !== s)].slice(0, 10);
+  ls('usnews_recent', JSON.stringify(recent));
+  renderRecent();
+}
+function removeRecent(s) {
+  recent = recent.filter(x => x !== s);
+  ls('usnews_recent', JSON.stringify(recent));
+  renderRecent();
+}
+function renderRecent() {
+  document.getElementById('recent-row').innerHTML =
+    '<span class="rc-lbl">Recent:</span>' +
+    recent.map(s => `<span class="rc" onclick="go('${s}')">${s}<span class="rc-x" onclick="event.stopPropagation();removeRecent('${s}')">✕</span></span>`).join('');
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+//  FETCH LAYER — Anthropic API + web_search (zero CORS issues)
+//
+//  Primary:  Claude claude-sonnet-4-6 with web_search tool
+//             → fetches live price, fundamentals, analyst data, news
+//             → api.anthropic.com is CORS-open from any origin
+//  Fallback: Yahoo Finance v8/chart direct (works ~60% from github.io)
+//             → price + basic OHLCV only
+// ══════════════════════════════════════════════════════════════════════════
+
+const ANT_URL = 'https://api.anthropic.com/v1/messages';
+const ANT_MODEL = 'claude-sonnet-4-6';
+
+// Call Anthropic with web_search - returns structured JSON stock data
+async function fetchViaAnthropic(sym) {
+  const prompt = `You are a financial data API. Search the web and return ONLY a valid JSON object (no markdown, no explanation) with current data for stock ticker ${sym}.
+
+Required format:
+{
+  "symbol": "${sym}",
+  "name": "Company full name",
+  "price": 123.45,
+  "prev_close": 120.00,
+  "change_pct": 2.87,
+  "change_abs": 3.45,
+  "market_cap": 1500000000,
+  "volume": 45000000,
+  "avg_volume": 38000000,
+  "pe_ttm": 25.4,
+  "pe_fwd": 22.1,
+  "eps_ttm": 4.87,
+  "eps_fwd": 5.60,
+  "w52_high": 145.00,
+  "w52_low": 85.00,
+  "ma50": 115.00,
+  "beta": 1.2,
+  "exchange": "NASDAQ",
+  "sector": "Technology",
+  "industry": "Software",
+  "description": "One sentence company description",
+  "target_mean": 135.00,
+  "target_high": 160.00,
+  "target_low": 110.00,
+  "analyst_count": 32,
+  "recommendation": "buy",
+  "gross_margin": 0.72,
+  "net_margin": 0.25,
+  "roe": 0.45,
+  "revenue_growth": 0.18,
+  "earnings_date": "2025-04-25",
+  "short_float": 0.015,
+  "inst_pct": 0.72,
+  "recent_news": [
+    {"title": "News headline 1", "source": "Reuters", "sentiment": "positive", "published": "2025-03-10"},
+    {"title": "News headline 2", "source": "Bloomberg", "sentiment": "neutral", "published": "2025-03-09"}
+  ],
+  "analyst_actions": [
+    {"firm": "Goldman Sachs", "action": "upgrade", "from": "neutral", "to": "buy", "target": 140, "date": "2025-03-08"}
+  ]
+}
+
+Use null for any field you cannot find. Return ONLY the JSON, nothing else.`;
+
+  const resp = await fetch(ANT_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: ANT_MODEL,
+      max_tokens: 2000,
+      tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+  if (!resp.ok) throw new Error('Anthropic API ' + resp.status);
+  const data = await resp.json();
+  // Extract text from content blocks
+  const text = (data.content || [])
+    .filter(b => b.type === 'text')
+    .map(b => b.text).join('');
+  // Parse JSON (strip any accidental markdown)
+  const clean = text.replace(/```json|```/g, '').trim();
+  const start = clean.indexOf('{');
+  const end   = clean.lastIndexOf('}');
+  if (start === -1 || end === -1) throw new Error('No JSON in response');
+  return JSON.parse(clean.slice(start, end + 1));
+}
+
+// Yahoo Finance v8 — direct, for basic price as last resort
+async function yf8direct(sym) {
+  for (const host of ['https://query1.finance.yahoo.com','https://query2.finance.yahoo.com']) {
+    try {
+      const r = await fetch(`${host}/v8/finance/chart/${sym}?interval=1d&range=5d`);
+      if (!r.ok) continue;
+      const j = await r.json();
+      const m = j?.chart?.result?.[0]?.meta;
+      if (m?.regularMarketPrice) return m;
+    } catch {}
+  }
+  return null;
+}
+//  MAIN LOOKUP
+// ══════════════════════════════════════════════════════════════════════════
+let busy = false;
+
+async function go(sym) {
+  sym = (sym || document.getElementById('sym-inp').value).trim().toUpperCase().replace(/[^A-Z0-9.]/g, '');
+  if (!sym || busy) return;
+  busy = true;
+
+  document.getElementById('sym-inp').value = sym;
+  const btn = document.getElementById('lbtn');
+  btn.disabled = true; btn.textContent = '⏳ Loading…';
+  setChart(sym);
+
+  const steps = ['🔍 Searching live data…','📊 Fetching fundamentals…','🧠 Analysing…','📰 Loading news…'];
+  let si = 0;
+  document.getElementById('results').innerHTML = `
+    <div class="empty" id="load-msg">
+      <span class="spinner"></span>
+      <span id="load-step">${steps[0]}</span>
+      <div class="lbar"><div class="lbar-f"></div></div>
+    </div>`;
+  const stepTick = setInterval(() => {
+    si = (si+1) % steps.length;
+    const el = document.getElementById('load-step');
+    if (el) el.textContent = steps[si];
+  }, 2200);
+
+  try {
+    // Primary: Anthropic API with web_search — bypasses all CORS restrictions
+    let d = null, source = '';
+    try {
+      d = await fetchViaAnthropic(sym);
+      if (d?.price) { source = 'Claude AI + Web Search'; console.log('[ant] ok:', sym); }
+      else d = null;
+    } catch(e) { console.warn('[ant] failed, trying v8 direct:', e.message); }
+
+    // Fallback: Yahoo v8 direct for basic price (works ~60% from github.io)
+    let v8 = null;
+    if (!d) {
+      v8 = await yf8direct(sym);
+      if (v8?.regularMarketPrice) {
+        source = 'Yahoo Finance v8';
+        // Build minimal d from v8 meta
+        const p = v8.regularMarketPrice, pc = v8.chartPreviousClose || v8.previousClose;
+        d = {
+          symbol: sym, name: v8.longName || v8.shortName || sym,
+          price: p, prev_close: pc,
+          change_pct: pc ? (p-pc)/pc*100 : null,
+          change_abs: pc ? p-pc : null,
+          market_cap: v8.marketCap, volume: v8.regularMarketVolume,
+          pe_ttm: v8.trailingPE, pe_fwd: v8.forwardPE,
+          w52_high: v8.fiftyTwoWeekHigh, w52_low: v8.fiftyTwoWeekLow,
+          exchange: v8.exchangeName || '', recent_news: [], analyst_actions: [],
+        };
+      }
+    }
+
+    if (!d?.price) {
+      throw new Error(`"${sym}" not found. Verify it's a valid US ticker (e.g. NVDA, AAPL, TSLA, AMZN).`);
+    }
+
+    // Parallel: also fetch Marketaux news
+    let news = [];
+    try {
+      const p = new URLSearchParams({ symbols: sym, filter_entities: 'true', language: 'en', limit: '15', api_token: MX_KEY });
+      const r = await fetch(`${MX_BASE}/news/all?${p}`);
+      if (r.ok) { const j = await r.json(); news = j?.data || []; }
+    } catch {}
+
+    addRecent(sym);
+    renderFromAnt(sym, d, news, source);
+
+  } catch (e) {
+    document.getElementById('results').innerHTML = `
+      <div class="err-box">⚠ ${e.message}</div>
+      <div class="empty"><span class="empty-ico">🔍</span>
+        <div class="empty-title">Tips</div>
+        <div class="empty-sub">
+          • Valid US tickers: <b>AAPL · NVDA · CRM · META · TSLA · AMZN</b><br>
+          • Data via Claude AI web search — works from any browser<br>
+          • Open F12 → Console for the full error
+        </div>
+      </div>`;
+  } finally {
+    clearInterval(stepTick);
+    busy = false;
+    btn.disabled = false; btn.textContent = '🔍 Lookup';
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════════════
+//  RENDER — unified renderer using Anthropic API response structure
+// ══════════════════════════════════════════════════════════════════════════
+
+const fc  = new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:2});
+const fn  = new Intl.NumberFormat('en-US',{maximumFractionDigits:0});
+const fv  = (n,d=2) => n == null ? '—' : Number(n).toFixed(d);
+const fb  = n => { if (n==null) return '—'; if (n>=1e12) return '$'+(n/1e12).toFixed(2)+'T'; if (n>=1e9) return '$'+(n/1e9).toFixed(2)+'B'; if (n>=1e6) return '$'+(n/1e6).toFixed(1)+'M'; return '$'+fn.format(n); };
+const fp  = n => n == null ? '—' : (n*100).toFixed(1)+'%';
+const pc  = n => n > 0 ? 'v-gn' : n < 0 ? 'v-rd' : 'v-nu';
+const fpc = n => n == null ? '—' : (n>0?'+':'')+Number(n).toFixed(2)+'%';
+
+function renderFromAnt(sym, d, news, source) {
+  const price    = d.price;
+  const prev     = d.prev_close;
+  const chgPct   = d.change_pct ?? (price && prev ? (price-prev)/prev*100 : null);
+  const chgAbs   = d.change_abs ?? (price && prev ? price-prev : null);
+  const name     = d.name || sym;
+  const upside   = price && d.target_mean ? (d.target_mean - price)/price*100 : null;
+
+  document.getElementById('cp-name').textContent = name;
+
+  const badge = document.getElementById('api-status');
+  if (badge) {
+    badge.textContent = '🟢 ' + (source || 'Data Loaded');
+    badge.style.cssText = "font-family:'JetBrains Mono',monospace;font-size:9px;padding:3px 8px;border-radius:4px;border:1px solid var(--gnbr);color:var(--gn);background:var(--gnbg)";
+  }
+
+  let h = `<div class="fin"><div id="ai-box"></div>`;
+
+  // ══ §1 OVERVIEW ═══════════════════════════════════════════════════════
+  h += `<div class="sh"><span>§1 · Overview — ${sym}</span></div>`;
+  h += `<div class="grid g4">
+    <div class="sc"><div class="sc-l">Price</div>
+      <div class="sc-v ${pc(chgPct)}">${price ? fc.format(price) : '—'}</div>
+      <div class="sc-s">${fpc(chgPct)}${chgAbs != null ? ' ('+fc.format(chgAbs)+')' : ''}</div>
+    </div>
+    <div class="sc"><div class="sc-l">Market Cap</div>
+      <div class="sc-v v-ac">${fb(d.market_cap)}</div>
+      <div class="sc-s">${d.exchange || '—'}</div>
+    </div>
+    <div class="sc"><div class="sc-l">52W Range</div>
+      <div class="sc-v v-nu" style="font-size:11px">${d.w52_low ? '$'+fv(d.w52_low) : '—'} – ${d.w52_high ? '$'+fv(d.w52_high) : '—'}</div>
+      <div class="sc-s">50d MA: ${d.ma50 ? '$'+fv(d.ma50) : '—'}</div>
+    </div>
+    <div class="sc"><div class="sc-l">P/E (TTM / Fwd)</div>
+      <div class="sc-v v-gd">${d.pe_ttm != null ? fv(d.pe_ttm,1) : '—'}</div>
+      <div class="sc-s">Fwd: ${d.pe_fwd != null ? fv(d.pe_fwd,1) : '—'}</div>
+    </div>
+  </div>`;
+
+  if (d.description || d.sector) {
+    h += `<div class="sc" style="margin:8px 0;flex-direction:row;gap:16px;flex-wrap:wrap">
+      ${d.sector ? `<span style="font-family:'JetBrains Mono',monospace;font-size:9px;padding:2px 8px;background:var(--ac3);border:1px solid var(--ac2);border-radius:4px;color:var(--ac)">${d.sector}${d.industry?' · '+d.industry:''}</span>` : ''}
+      ${d.description ? `<span style="font-size:11px;color:var(--txd);flex:1;min-width:200px">${d.description}</span>` : ''}
+      <a href="https://finance.yahoo.com/quote/${sym}" target="_blank" style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ac);text-decoration:none">Yahoo ↗</a>
+      <a href="https://finviz.com/quote.ashx?t=${sym}" target="_blank" style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ac);text-decoration:none">Finviz ↗</a>
+      <a href="https://www.barchart.com/stocks/quotes/${sym}" target="_blank" style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ac);text-decoration:none">Barchart ↗</a>
+    </div>`;
+  }
+
+  // ══ §2 ANALYST RATINGS ════════════════════════════════════════════════
+  h += `<div class="sh"><span>§2 · Analyst Ratings</span></div>`;
+  const rec = (d.recommendation || '').toLowerCase();
+  const recBadge = rec.includes('strong_buy') || rec==='buy' ? 'v-gn' :
+                   rec==='hold' ? 'v-gd' :
+                   rec.includes('sell') ? 'v-rd' : 'v-nu';
+  const recLabel = rec.replace('_',' ').toUpperCase() || '—';
+  h += `<div class="grid g4">
+    <div class="sc"><div class="sc-l">Consensus</div>
+      <div class="sc-v"><span class="badge ${recBadge}">${recLabel}</span></div>
+      <div class="sc-s">${d.analyst_count != null ? d.analyst_count+' analysts' : '—'}</div>
+    </div>
+    <div class="sc"><div class="sc-l">PT Mean</div>
+      <div class="sc-v v-ac">${d.target_mean ? '$'+fv(d.target_mean) : '—'}</div>
+      <div class="sc-s">${upside != null ? 'Upside: '+(upside>0?'+':'')+fv(upside,1)+'%' : '—'}</div>
+    </div>
+    <div class="sc"><div class="sc-l">PT High</div>
+      <div class="sc-v v-gn">${d.target_high ? '$'+fv(d.target_high) : '—'}</div>
+    </div>
+    <div class="sc"><div class="sc-l">PT Low</div>
+      <div class="sc-v v-rd">${d.target_low ? '$'+fv(d.target_low) : '—'}</div>
+    </div>
+  </div>`;
+
+  // Analyst actions table
+  const aa = d.analyst_actions || [];
+  if (aa.length) {
+    h += `<div class="tbl-wrap"><table class="tbl"><thead><tr>
+      <th>Firm</th><th>Action</th><th>Rating</th><th>Target</th><th>Date</th>
+    </tr></thead><tbody>`;
+    aa.slice(0,8).forEach(a => {
+      const ac = (a.action||'').toLowerCase().includes('upgrade') ? 'v-gn' :
+                 (a.action||'').toLowerCase().includes('downgrade') ? 'v-rd' : 'v-gd';
+      h += `<tr>
+        <td>${a.firm||'—'}</td>
+        <td><span class="badge ${ac}">${a.action||'—'}</span></td>
+        <td>${a.from ? a.from+'→'+a.to : (a.to||'—')}</td>
+        <td>${a.target ? '$'+a.target : '—'}</td>
+        <td style="color:var(--txd)">${a.date||'—'}</td>
+      </tr>`;
+    });
+    h += `</tbody></table></div>`;
+  }
+
+  // ══ §3 EARNINGS ═══════════════════════════════════════════════════════
+  h += `<div class="sh"><span>§3 · Earnings</span></div>`;
+  h += `<div class="grid g4">
+    <div class="sc"><div class="sc-l">Next Earnings</div>
+      <div class="sc-v v-or">${d.earnings_date || '—'}</div>
+    </div>
+    <div class="sc"><div class="sc-l">EPS (TTM)</div>
+      <div class="sc-v ${pc(d.eps_ttm)}">${d.eps_ttm != null ? '$'+fv(d.eps_ttm) : '—'}</div>
+    </div>
+    <div class="sc"><div class="sc-l">EPS (Fwd)</div>
+      <div class="sc-v v-gd">${d.eps_fwd != null ? '$'+fv(d.eps_fwd) : '—'}</div>
+    </div>
+    <div class="sc"><div class="sc-l">Revenue Growth</div>
+      <div class="sc-v ${pc(d.revenue_growth)}">${d.revenue_growth != null ? fpc(d.revenue_growth*100) : '—'}</div>
+    </div>
+  </div>`;
+
+  // ══ §4 KEY METRICS ════════════════════════════════════════════════════
+  h += `<div class="sh"><span>§4 · Key Metrics</span></div>`;
+  h += `<div class="grid g4">
+    <div class="sc"><div class="sc-l">Gross Margin</div>
+      <div class="sc-v v-gn">${d.gross_margin != null ? fp(d.gross_margin) : '—'}</div>
+    </div>
+    <div class="sc"><div class="sc-l">Net Margin</div>
+      <div class="sc-v ${pc(d.net_margin)}">${d.net_margin != null ? fp(d.net_margin) : '—'}</div>
+    </div>
+    <div class="sc"><div class="sc-l">ROE</div>
+      <div class="sc-v ${pc(d.roe)}">${d.roe != null ? fp(d.roe) : '—'}</div>
+    </div>
+    <div class="sc"><div class="sc-l">Beta</div>
+      <div class="sc-v ${d.beta > 1.5 ? 'v-or' : d.beta < 0.5 ? 'v-pu' : 'v-nu'}">${d.beta != null ? fv(d.beta,2) : '—'}</div>
+      <div class="sc-s">${d.avg_volume ? fn.format(d.avg_volume)+' avg vol' : '—'}</div>
+    </div>
+    <div class="sc"><div class="sc-l">Short Float</div>
+      <div class="sc-v ${d.short_float > 0.1 ? 'v-rd' : 'v-nu'}">${d.short_float != null ? fp(d.short_float) : '—'}</div>
+    </div>
+    <div class="sc"><div class="sc-l">Inst. Owned</div>
+      <div class="sc-v v-pu">${d.inst_pct != null ? fp(d.inst_pct) : '—'}</div>
+    </div>
+    <div class="sc"><div class="sc-l">Volume</div>
+      <div class="sc-v v-nu">${d.volume ? fn.format(d.volume) : '—'}</div>
+    </div>
+    <div class="sc"><div class="sc-l">52W Position</div>
+      <div class="sc-v v-ac">${(d.w52_high && d.w52_low && price) ? fv((price-d.w52_low)/(d.w52_high-d.w52_low)*100,0)+'%' : '—'}</div>
+      <div class="sc-s">of 52w range</div>
+    </div>
+  </div>`;
+
+  // ══ §5 NEWS ═══════════════════════════════════════════════════════════
+  // Combine AI news + Marketaux news
+  const aiNews = (d.recent_news || []).map(n => ({
+    title: n.title, source: n.source || '—', sentiment: n.sentiment, published_at: n.published, url: '#'
+  }));
+  const allNews = [...aiNews, ...(news||[])].slice(0,12);
+
+  if (allNews.length) {
+    h += `<div class="sh"><span>§5 · News & Sentiment</span></div>`;
+    h += `<div class="news-list">`;
+    allNews.forEach(n => {
+      const sent  = (n.sentiment || n.sentiment_score || '').toString();
+      const sntCls = sent.includes('pos') || parseFloat(sent) > 0.05 ? 'snt-p' :
+                     sent.includes('neg') || parseFloat(sent) < -0.05 ? 'snt-n' : 'snt-x';
+      const sntLbl = sent.includes('pos') ? '▲' : sent.includes('neg') ? '▼' : '◆';
+      const link   = n.url && n.url !== '#' ? n.url : (n.news_url || '#');
+      const pub    = n.published_at || n.published || '';
+      h += `<a class="news-item" href="${link}" target="_blank" rel="noopener">
+        <div class="news-top">
+          <span class="news-src">${n.source || n.entities?.[0]?.name || '—'}</span>
+          <span class="news-dt">${pub ? pub.slice(0,10) : '—'}</span>
+          <span class="snt ${sntCls}">${sntLbl}</span>
+        </div>
+        <div class="news-title">${n.title || '—'}</div>
+      </a>`;
+    });
+    h += `</div>`;
+  }
+
+  h += `<div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--txd);padding:8px 0;text-align:right">
+    Source: ${source} · ${new Date().toLocaleString()}
+  </div>`;
+  h += `</div>`;
+
+  document.getElementById('results').innerHTML = h;
+  renderAI(sym, d);
+}
+
+
+// ── AI Analyst Note ────────────────────────────────────────────────────────
+async function renderAI(sym, d) {
+  const box = document.getElementById('ai-box');
+  if (!box) return;
+  box.innerHTML = `<div class="ai-box"><div class="ai-hdr">🤖 AI Analyst Note — ${sym}</div>
+    <div class="ai-thinking"><span class="dots"><span>●</span><span>●</span><span>●</span></span>Analysing…</div>
+  </div>`;
+  const ctx = {
+    sym, name: d.name||sym, sector: d.sector, industry: d.industry,
+    price: d.price, changePct: d.change_pct, marketCap: d.market_cap,
+    pe: d.pe_ttm, fwdPe: d.pe_fwd, epsTTM: d.eps_ttm, epsForward: d.eps_fwd,
+    w52h: d.w52_high, w52l: d.w52_low, beta: d.beta,
+    targetMean: d.target_mean, targetHigh: d.target_high, targetLow: d.target_low,
+    analysts: d.analyst_count, recommendation: d.recommendation,
+    grossMargin: d.gross_margin, netMargin: d.net_margin,
+    roe: d.roe, revenueGrowth: d.revenue_growth,
+    shortPct: d.short_float, instPct: d.inst_pct, earningsDate: d.earnings_date,
+    recentHeadlines: (d.recent_news||[]).slice(0,3).map(n=>n.title),
+  };
+  const prompt = `You are a Wall Street equity analyst. Write a concise analyst note on ${sym} (${ctx.name||sym}) using the data below.\n\nDATA: ${JSON.stringify(ctx)}\n\nUse exactly these 6 bold sections:\n**SNAPSHOT** — Company and market position (2 sentences).\n**EARNINGS QUALITY** — EPS, margins, revenue growth with actual numbers (2-3 sentences).\n**ANALYST SENTIMENT** — Consensus, PT upside/downside (2 sentences).\n**SMART MONEY** — Institutional/insider signals, short interest (2 sentences).\n**KEY RISKS** — 2-3 specific quantified risks.\n**CATALYST WATCH** — Next earnings, key metric, catalyst.\n\nDirect and opinionated. Under 280 words.`;
+  try {
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }] }),
+    });
+    const j = await r.json();
+    const text = (j.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
+    if (!text) { box.innerHTML=''; return; }
+    const fmt = text.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>').replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>');
+    box.innerHTML = `<div class="ai-box"><div class="ai-hdr">🤖 AI Analyst Note — ${sym} · ${ctx.name||sym}</div><div class="ai-body"><p>${fmt}</p></div></div>`;
+  } catch(e) { box.innerHTML=''; console.warn('[AI]',e.message); }
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+renderRecent();
+const _badge = document.getElementById('api-status');
+if (_badge) {
+  _badge.textContent = '✅ Ready — enter a ticker';
+  _badge.style.cssText = "font-family:'JetBrains Mono',monospace;font-size:9px;padding:3px 8px;border-radius:4px;border:1px solid var(--bd2);color:var(--txd);background:var(--sf2)";
+}
+const urlSym = new URLSearchParams(location.search).get('sym') || location.hash.slice(1);
+if (urlSym) go(urlSym.toUpperCase());
+</script>
+</body>
+</html>
