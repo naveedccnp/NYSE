@@ -1,0 +1,62 @@
+name: Deploy US-News Page (inject API keys)
+
+# ──────────────────────────────────────────────────────────────────────────
+# This workflow injects FINNHUB_KEY and MARKETAUX_KEY secrets into us-news.html
+# and commits the deployed version to the repository root so GitHub Pages serves it.
+#
+# Required secrets (Settings → Secrets → Actions):
+#   FINNHUB_KEY    — from https://finnhub.io/dashboard
+#   MARKETAUX_KEY  — from https://www.marketaux.com/account/api
+#
+# Triggers:
+#   • Automatically on every push that touches us-news.html
+#   • Manually via "Run workflow" button in Actions tab
+# ──────────────────────────────────────────────────────────────────────────
+
+on:
+  push:
+    paths:
+      - 'us-news.html'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Inject API keys into us-news.html
+        env:
+          FINNHUB_KEY:   ${{ secrets.FINNHUB_KEY }}
+          MARKETAUX_KEY: ${{ secrets.MARKETAUX_KEY }}
+        run: |
+          # Replace placeholders with real keys
+          sed -i "s|%%FINNHUB_KEY%%|${FINNHUB_KEY}|g"   us-news.html
+          sed -i "s|%%MARKETAUX_KEY%%|${MARKETAUX_KEY}|g" us-news.html
+
+          # Verify replacement worked (will print key length, not the key itself)
+          echo "FH key length:  $(echo -n "${FINNHUB_KEY}"   | wc -c)"
+          echo "MX key length:  $(echo -n "${MARKETAUX_KEY}" | wc -c)"
+
+          # Quick sanity check — placeholders should be gone
+          if grep -q '%%FINNHUB_KEY%%' us-news.html; then
+            echo "ERROR: FINNHUB_KEY placeholder was not replaced — secret may be missing"
+            exit 1
+          fi
+          if grep -q '%%MARKETAUX_KEY%%' us-news.html; then
+            echo "ERROR: MARKETAUX_KEY placeholder was not replaced — secret may be missing"
+            exit 1
+          fi
+          echo "Key injection successful"
+
+      - name: Commit deployed us-news.html
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name  "github-actions[bot]"
+          git add us-news.html
+          git diff --staged --quiet || git commit -m "deploy: inject API keys into us-news.html $(date -u '+%Y-%m-%d %H:%M UTC')"
+          git push
