@@ -43,7 +43,7 @@ jobs:
           echo "MX key length:  $(echo -n "${MARKETAUX_KEY}" | wc -c)"
 
           # Quick sanity check — placeholders should be gone
-          if grep -q '%%FINNHUB_KEY%%' us-news.html; then
+          if grep -q '%%FINNHUB_KEY%%' news.html; then
             echo "ERROR: FINNHUB_KEY placeholder was not replaced — secret may be missing"
             exit 1
           fi
