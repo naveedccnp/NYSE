@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EP Catalyst Analyzer · NYSE Tools</title>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #10101a;
+    --bg3: #16161f;
+    --border: #2a2a3a;
+    --border2: #3a3a50;
+    --text: #d0d0e0;
+    --text2: #8888aa;
+    --text3: #55556a;
+    --accent: #4a9eff;
+    --accent2: #2a5eaa;
+    --green: #2ecc71;
+    --green2: #1a6e3c;
+    --amber: #f0a500;
+    --amber2: #6a4800;
+    --red: #e74c3c;
+    --red2: #6a1e1a;
+    --purple: #9b59b6;
+    --cyan: #1abc9c;
+    --font-mono: 'Courier New', Courier, monospace;
+    --font-sans: 'Segoe UI', system-ui, sans-serif;
+  }
+  .light-mode {
+    --bg: #f4f4f0;
+    --bg2: #ebebе5;
+    --bg3: #ffffff;
+    --border: #d0d0c0;
+    --border2: #b0b0a0;
+    --text: #1a1a2e;
+    --text2: #555565;
+    --text3: #999988;
+    --accent: #1a5ecc;
+    --accent2: #d0e0ff;
+    --green: #1a7c42;
+    --green2: #d0f0e0;
+    --amber: #a06800;
+    --amber2: #fff0c0;
+    --red: #cc2222;
+    --red2: #ffe0e0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 14px; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-mono);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* ── NAV ── */
+  nav {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 0 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex-wrap: wrap;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .nav-brand {
+    font-size: 13px;
+    font-weight: bold;
+    color: var(--accent);
+    padding: 10px 12px 10px 0;
+    border-right: 1px solid var(--border);
+    margin-right: 4px;
+    letter-spacing: 0.05em;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .nav-link {
+    font-size: 12px;
+    color: var(--text2);
+    text-decoration: none;
+    padding: 10px 10px;
+    border-bottom: 2px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
+    white-space: nowrap;
+  }
+  .nav-link:hover { color: var(--text); }
+  .nav-link.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .nav-spacer { flex: 1; }
+  .theme-toggle {
+    font-size: 11px;
+    color: var(--text2);
+    background: none;
+    border: 1px solid var(--border);
+    padding: 4px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-family: var(--font-mono);
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .theme-toggle:hover { color: var(--text); border-color: var(--border2); }
+
+  /* ── LAYOUT ── */
+  .container { max-width: 900px; margin: 0 auto; padding: 1.5rem 1rem; }
+
+  /* ── PAGE HEADER ── */
+  .page-header {
+    border-left: 3px solid var(--accent);
+    padding-left: 12px;
+    margin-bottom: 1.5rem;
+  }
+  .page-header h1 {
+    font-size: 16px;
+    font-weight: bold;
+    color: var(--accent);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .page-header p {
+    font-size: 11px;
+    color: var(--text2);
+    margin-top: 3px;
+  }
+
+  /* ── SEARCH BAR ── */
+  .search-panel {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    border-radius: 2px;
+  }
+  .search-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .search-prefix {
+    font-size: 13px;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+  .ticker-input {
+    flex: 1;
+    max-width: 160px;
+    background: var(--bg);
+    border: 1px solid var(--border2);
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 15px;
+    font-weight: bold;
+    letter-spacing: 0.1em;
+    padding: 6px 10px;
+    border-radius: 2px;
+    outline: none;
+    text-transform: uppercase;
+    transition: border-color 0.15s;
+  }
+  .ticker-input:focus { border-color: var(--accent); }
+  .analyze-btn {
+    background: var(--accent2);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 0.08em;
+    padding: 6px 18px;
+    border-radius: 2px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: background 0.15s, color 0.15s;
+    white-space: nowrap;
+  }
+  .analyze-btn:hover:not(:disabled) { background: var(--accent); color: var(--bg); }
+  .analyze-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .search-hint {
+    font-size: 11px;
+    color: var(--text3);
+    margin-top: 8px;
+  }
+
+  /* ── ERROR ── */
+  .error-box {
+    background: var(--red2);
+    border: 1px solid var(--red);
+    color: var(--red);
+    padding: 10px 14px;
+    font-size: 12px;
+    border-radius: 2px;
+    margin-bottom: 1rem;
+  }
+
+  /* ── LOADING ── */
+  .loading-state {
+    text-align: center;
+    padding: 3rem 0;
+    color: var(--text2);
+    font-size: 12px;
+  }
+  .blink { animation: blink 1s step-end infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* ── RESULT SECTIONS ── */
+  .result-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+  }
+
+  .result-topbar {
+    background: var(--bg3);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 16px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .topbar-left { flex: 1; min-width: 0; }
+  .ticker-line {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+  }
+  .ticker-tag {
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--accent);
+    background: var(--bg);
+    border: 1px solid var(--accent2);
+    padding: 2px 10px;
+    border-radius: 2px;
+    letter-spacing: 0.08em;
+  }
+  .exchange-tag {
+    font-size: 11px;
+    color: var(--text2);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 2px 7px;
+    border-radius: 2px;
+  }
+  .sector-tag {
+    font-size: 10px;
+    color: var(--text3);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 2px 7px;
+    border-radius: 2px;
+  }
+  .headline { font-size: 13px; font-weight: bold; color: var(--text); line-height: 1.4; }
+  .meta-line { font-size: 11px; color: var(--text2); margin-top: 4px; }
+
+  .verdict-box {
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .verdict-label-small { font-size: 10px; color: var(--text3); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 2px; }
+  .verdict-text { font-size: 20px; font-weight: bold; letter-spacing: 0.04em; }
+  .verdict-SOLID { color: var(--green); }
+  .verdict-INCREMENTAL { color: var(--amber); }
+  .verdict-NOISE { color: var(--text2); }
+  .action-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 0.08em;
+    padding: 3px 10px;
+    border-radius: 2px;
+    margin-top: 4px;
+    text-transform: uppercase;
+    border: 1px solid;
+  }
+  .action-TRADE { color: var(--green); border-color: var(--green); background: var(--green2); }
+  .action-WATCH { color: var(--amber); border-color: var(--amber); background: var(--amber2); }
+  .action-PASS { color: var(--text2); border-color: var(--border2); background: var(--bg); }
+
+  /* Score bar */
+  .score-bar-section {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .score-number-big {
+    font-size: 36px;
+    font-weight: bold;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .score-noise { color: var(--text2); }
+  .score-incremental { color: var(--amber); }
+  .score-solid { color: var(--green); }
+  .score-right { flex: 1; min-width: 120px; }
+  .score-sub { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+  .progress-track {
+    height: 4px;
+    background: var(--bg);
+    border-radius: 2px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.8s ease;
+  }
+  .fill-noise { background: var(--text3); }
+  .fill-incremental { background: var(--amber); }
+  .fill-solid { background: var(--green); }
+
+  /* ── SECTION BLOCKS ── */
+  .sec {
+    border-top: 1px solid var(--border);
+    padding: 12px 16px;
+  }
+  .sec-title {
+    font-size: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .sec-body {
+    font-size: 12px;
+    color: var(--text);
+    line-height: 1.7;
+    font-family: var(--font-sans);
+  }
+
+  /* Score grid */
+  .score-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+  .score-cell {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 8px 10px;
+    border-radius: 2px;
+  }
+  .score-cell-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+  .score-cell-val { font-size: 20px; font-weight: bold; color: var(--text); }
+  .score-cell-denom { font-size: 12px; font-weight: normal; color: var(--text2); }
+
+  /* Flag list */
+  .flag-list { list-style: none; padding: 0; margin: 0; }
+  .flag-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 12px;
+    padding: 3px 0;
+    color: var(--text);
+    font-family: var(--font-sans);
+    line-height: 1.5;
+  }
+  .fi-pass { color: var(--green); flex-shrink: 0; font-family: var(--font-mono); }
+  .fi-warn { color: var(--amber); flex-shrink: 0; font-family: var(--font-mono); }
+  .fi-fail { color: var(--red); flex-shrink: 0; font-family: var(--font-mono); }
+
+  /* Checklist */
+  .checklist { list-style: none; padding: 0; margin: 0; }
+  .checklist li {
+    display: flex;
+    gap: 8px;
+    font-size: 12px;
+    padding: 3px 0;
+    font-family: var(--font-sans);
+    line-height: 1.5;
+  }
+  .ci-yes { color: var(--green); flex-shrink: 0; font-family: var(--font-mono); }
+  .ci-no  { color: var(--red);   flex-shrink: 0; font-family: var(--font-mono); }
+  .ci-warn{ color: var(--amber); flex-shrink: 0; font-family: var(--font-mono); }
+
+  /* Adjustments table */
+  .adj-table { width: 100%; font-size: 12px; border-collapse: collapse; }
+  .adj-table td { padding: 4px 0; vertical-align: top; }
+  .adj-table td:first-child { color: var(--text2); font-family: var(--font-sans); width: 55%; }
+  .adj-table td:nth-child(2) { color: var(--text3); width: 20%; }
+  .adj-table td:nth-child(3) { text-align: right; font-family: var(--font-mono); width: 25%; }
+  .adj-total {
+    border-top: 1px solid var(--border);
+    margin-top: 8px;
+    padding-top: 8px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    font-weight: bold;
+  }
+
+  /* Key phrases */
+  .phrase {
+    display: inline-block;
+    font-size: 11px;
+    font-family: var(--font-mono);
+    color: var(--cyan);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 3px 8px;
+    margin: 3px 3px 3px 0;
+    border-radius: 2px;
+  }
+
+  /* Risk badge */
+  .risk-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: bold;
+    padding: 3px 10px;
+    border-radius: 2px;
+    border: 1px solid;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .risk-LOW { color: var(--green); border-color: var(--green); background: var(--green2); }
+  .risk-MODERATE { color: var(--amber); border-color: var(--amber); background: var(--amber2); }
+  .risk-HIGH { color: var(--red); border-color: var(--red); background: var(--red2); }
+  .risk-MODERATE-TO-HIGH { color: var(--red); border-color: var(--red); background: var(--red2); }
+  .risk-VERY-HIGH { color: var(--red); border-color: var(--red); background: var(--red2); }
+
+  /* Trader checklist numbered */
+  .trader-list { list-style: none; padding: 0; margin: 0; counter-reset: tc; }
+  .trader-list li {
+    counter-increment: tc;
+    display: flex;
+    gap: 8px;
+    font-size: 12px;
+    padding: 4px 0;
+    font-family: var(--font-sans);
+    line-height: 1.5;
+    border-bottom: 1px solid var(--border);
+  }
+  .trader-list li:last-child { border-bottom: none; }
+  .trader-list li::before {
+    content: counter(tc) '.';
+    font-family: var(--font-mono);
+    color: var(--accent);
+    font-size: 11px;
+    flex-shrink: 0;
+    min-width: 18px;
+    margin-top: 1px;
+  }
+
+  /* Disclaimer */
+  .disclaimer {
+    font-size: 10px;
+    color: var(--text3);
+    padding: 10px 16px;
+    border-top: 1px solid var(--border);
+    line-height: 1.6;
+    font-family: var(--font-sans);
+  }
+
+  /* ── FOOTER ── */
+  .page-footer {
+    margin-top: 2rem;
+    padding: 1rem 0;
+    border-top: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--text3);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  @media (max-width: 500px) {
+    .score-bar-section { flex-direction: column; align-items: flex-start; }
+    .result-topbar { flex-direction: column; }
+    .verdict-box { text-align: left; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="https://naveedccnp.github.io/NYSE/index.html">NYSE / EP·CATALYST</a>
+  <a class="nav-link" href="https://naveedccnp.github.io/NYSE/index.html">🧭 MM</a>
+  <a class="nav-link" href="https://naveedccnp.github.io/NYSE/ntrt.html">⚡ NTRT</a>
+  <a class="nav-link active" href="#">🔬 EP</a>
+  <a class="nav-link" href="https://naveedccnp.github.io/NYSE/news.html">📰 News</a>
+  <div class="nav-spacer"></div>
+  <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">🌙 Dark</button>
+</nav>
+
+<div class="container">
+
+  <div class="page-header">
+    <h1>🔬 EP Catalyst Analyzer</h1>
+    <p>Enter a ticker → AI fetches latest press release → Full catalyst analysis using EP Framework</p>
+  </div>
+
+  <div class="search-panel">
+    <div class="search-row">
+      <span class="search-prefix">$</span>
+      <input class="ticker-input" id="ticker" type="text" placeholder="AIFF" maxlength="10" autocomplete="off" />
+      <button class="analyze-btn" id="analyzeBtn" onclick="runAnalysis()">[ ANALYZE ]</button>
+    </div>
+    <div class="search-hint">
+      Searches Globe Newswire · SEC EDGAR · company IR · latest press releases
+    </div>
+  </div>
+
+  <div id="error-zone"></div>
+  <div id="result-zone"></div>
+
+  <div class="page-footer">
+    <span>EP Catalyst Framework · Not investment advice</span>
+    <span id="ts"></span>
+  </div>
+
+</div>
+
+<script>
+// Timestamp
+document.getElementById('ts').textContent = new Date().toLocaleString('en-US', {timeZoneName:'short'});
+
+// Theme
+let dark = true;
+function toggleTheme() {
+  dark = !dark;
+  document.body.classList.toggle('light-mode', !dark);
+  document.getElementById('themeBtn').textContent = dark ? '🌙 Dark' : '☀️ Light';
+}
+
+// Input UX
+const tickerEl = document.getElementById('ticker');
+tickerEl.addEventListener('input', () => { tickerEl.value = tickerEl.value.toUpperCase(); });
+tickerEl.addEventListener('keydown', e => { if (e.key === 'Enter') runAnalysis(); });
+
+const SYSTEM_PROMPT = `You are an expert EP (Event-Driven Play) catalyst analyst. Given a stock ticker and its latest press release content, perform a rigorous catalyst analysis following this exact framework.
+
+You must respond ONLY with a valid JSON object (no markdown, no preamble, no backticks). The JSON must have this exact structure:
+
+{
+  "ticker": "string",
+  "exchange": "string",
+  "company_name": "string",
+  "headline": "string",
+  "release_date": "string",
+  "source": "string",
+  "event_horizon": "PASS|CONDITIONAL PASS|FAIL",
+  "freshness": "BREAKING|RECENT|STALE|RECYCLED",
+  "verdict": "SOLID|INCREMENTAL|NOISE",
+  "action": "TRADE|WATCH|PASS",
+  "adjusted_score": number,
+  "summary": "string (2-3 sentences)",
+  "catalyst_strength_score": number,
+  "catalyst_strength_note": "string",
+  "iac_score": number,
+  "iac_note": "string",
+  "strategic_score": number,
+  "strategic_note": "string",
+  "partner_halo_score": number,
+  "partner_halo_note": "string",
+  "language_grade": "A|B|C|D|F",
+  "language_note": "string",
+  "momentum_triggers_count": number,
+  "momentum_triggers_total": 7,
+  "momentum_note": "string",
+  "red_flags": [{"status": "PASS|WARN|FAIL", "text": "string"}],
+  "red_flag_count": number,
+  "red_flag_multiplier": number,
+  "capital_raise_risk": "LOW|MODERATE|HIGH|MODERATE-TO-HIGH|VERY HIGH",
+  "capital_raise_note": "string",
+  "event_horizon_bullets": [{"pass": true, "text": "string"} or {"pass": false, "text": "string"} or {"pass": "warn", "text": "string"}],
+  "score_adjustments": [{"label": "string", "multiplier": number, "score_before": number, "score_after": number}],
+  "base_composite_score": number,
+  "key_phrases": ["string"],
+  "trader_checklist": [{"text": "string"}],
+  "sector_tags": ["string"],
+  "final_note": "string (2-3 sentences max)"
+}
+
+Be rigorous and critical. Score conservatively. If financial terms are absent, apply heavy penalties. If the counterparty is unverifiable, flag it critically. Base all scores on the press release content provided.`;
+
+async function runAnalysis() {
+  const ticker = tickerEl.value.trim().toUpperCase();
+  if (!ticker) return;
+
+  const btn = document.getElementById('analyzeBtn');
+  const errZone = document.getElementById('error-zone');
+  const resultZone = document.getElementById('result-zone');
+
+  btn.disabled = true;
+  errZone.innerHTML = '';
+  resultZone.innerHTML = `<div class="loading-state"><span>⟳ Analyzing ${ticker}</span><span class="blink">_</span><br><br><span style="font-size:11px;color:var(--text3)">Fetching press releases · Running EP framework · Scoring catalyst...</span></div>`;
+
+  try {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        system: SYSTEM_PROMPT,
+        tools: [{ type: "web_search_20250305", name: "web_search" }],
+        messages: [{
+          role: "user",
+          content: `Ticker: ${ticker}\n\nUse the web_search tool to find the most recent press release or significant news announcement for stock ticker ${ticker}. Search for: "${ticker} press release", "${ticker} announces", "${ticker} SEC filing news". Then run the full EP Catalyst analysis and return ONLY valid JSON as specified.`
+        }]
+      })
+    });
+
+    const data = await response.json();
+    if (data.error) throw new Error(data.error.message || 'API error');
+
+    let jsonText = '';
+    for (const block of data.content) {
+      if (block.type === 'text') jsonText += block.text;
+    }
+    jsonText = jsonText.replace(/```json|```/g, '').trim();
+    const fb = jsonText.indexOf('{');
+    const lb = jsonText.lastIndexOf('}');
+    if (fb === -1) throw new Error('No analysis returned. Ticker may not have recent news.');
+    jsonText = jsonText.slice(fb, lb + 1);
+
+    const result = JSON.parse(jsonText);
+    renderResult(result);
+  } catch (err) {
+    resultZone.innerHTML = '';
+    errZone.innerHTML = `<div class="error-box">⚠ Error: ${err.message || 'Unknown error'}</div>`;
+  } finally {
+    btn.disabled = false;
+    document.getElementById('ts').textContent = new Date().toLocaleString('en-US', {timeZoneName:'short'});
+  }
+}
+
+function scoreClass(s) { return s >= 60 ? 'score-solid' : s >= 40 ? 'score-incremental' : 'score-noise'; }
+function fillClass(s)  { return s >= 60 ? 'fill-solid'  : s >= 40 ? 'fill-incremental'  : 'fill-noise';  }
+function fi(status) {
+  if (status === 'PASS') return '<span class="fi-pass">✓</span>';
+  if (status === 'WARN') return '<span class="fi-warn">⚑</span>';
+  return '<span class="fi-fail">✗</span>';
+}
+function ci(pass) {
+  if (pass === true) return '<span class="ci-yes">✓</span>';
+  if (pass === 'warn') return '<span class="ci-warn">⚠</span>';
+  return '<span class="ci-no">✗</span>';
+}
+function riskKey(r) { return (r||'').replace(/\s+/g,'-').toUpperCase(); }
+
+function renderResult(r) {
+  const sc  = scoreClass(r.adjusted_score);
+  const fc  = fillClass(r.adjusted_score);
+  const v   = r.verdict || 'NOISE';
+  const act = r.action || 'PASS';
+
+  const tagsHtml = (r.sector_tags||[]).map(t => `<span class="sector-tag">${t}</span>`).join('');
+  const flagsHtml = (r.red_flags||[]).map(f => `<li>${fi(f.status)}<span>${f.text}</span></li>`).join('');
+  const ehHtml = (r.event_horizon_bullets||[]).map(b => `<li>${ci(b.pass)}<span>${b.text}</span></li>`).join('');
+  const adjHtml = (r.score_adjustments||[]).map(a =>
+    `<tr><td>${a.label}</td><td>×${a.multiplier}</td><td>${Math.round(a.score_before)} → ${Math.round(a.score_after)}</td></tr>`
+  ).join('');
+  const phraseHtml = (r.key_phrases||[]).map(p => `<span class="phrase">"${p}"</span>`).join('');
+  const traderHtml = (r.trader_checklist||[]).map(c => `<li>${c.text}</li>`).join('');
+
+  document.getElementById('result-zone').innerHTML = `
+  <div class="result-card">
+
+    <div class="result-topbar">
+      <div class="topbar-left">
+        <div class="ticker-line">
+          <span class="ticker-tag">${r.ticker}</span>
+          ${r.exchange ? `<span class="exchange-tag">${r.exchange}</span>` : ''}
+          ${tagsHtml}
+        </div>
+        <div class="headline">${r.company_name ? r.company_name + ' — ' : ''}${r.headline}</div>
+        <div class="meta-line">
+          ${r.release_date || ''} &nbsp;·&nbsp; Source: ${r.source || '—'}
+          &nbsp;·&nbsp; Freshness: <strong>${r.freshness}</strong>
+          &nbsp;·&nbsp; Event Horizon: <strong>${r.event_horizon}</strong>
+        </div>
+      </div>
+      <div class="verdict-box">
+        <div class="verdict-label-small">Verdict</div>
+        <div class="verdict-text verdict-${v}">${v}</div>
+        <div class="action-badge action-${act}">ACTION: ${act}</div>
+      </div>
+    </div>
+
+    <div class="score-bar-section">
+      <div class="score-number-big ${sc}">${r.adjusted_score}<span style="font-size:16px;font-weight:normal;color:var(--text2)"> / 100</span></div>
+      <div class="score-right">
+        <div class="score-sub">Adjusted Composite Score · After multipliers</div>
+        <div class="progress-track">
+          <div class="progress-fill ${fc}" style="width:${Math.min(r.adjusted_score,100)}%"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-top:3px;">
+          <span>0 — NOISE</span><span>40 — INCREMENTAL</span><span>60+ SOLID</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-title">§1 Summary</div>
+      <div class="sec-body">${r.summary}</div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-title">§1.5 Event Horizon Filter</div>
+      <ul class="checklist">${ehHtml}</ul>
+      <div style="margin-top:8px;font-size:12px;font-weight:bold;color:var(--accent);">EVENT HORIZON: ${r.event_horizon}</div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-title">§2 EP Catalyst Scores</div>
+      <div class="score-grid">
+        <div class="score-cell">
+          <div class="score-cell-label">Catalyst Strength</div>
+          <div class="score-cell-val">${r.catalyst_strength_score}<span class="score-cell-denom"> /10</span></div>
+        </div>
+        <div class="score-cell">
+          <div class="score-cell-label">IAC Score</div>
+          <div class="score-cell-val">${r.iac_score}<span class="score-cell-denom"> /10</span></div>
+        </div>
+        <div class="score-cell">
+          <div class="score-cell-label">Strategic Impact</div>
+          <div class="score-cell-val">${r.strategic_score}<span class="score-cell-denom"> /10</span></div>
+        </div>
+        <div class="score-cell">
+          <div class="score-cell-label">Partner Halo</div>
+          <div class="score-cell-val">${r.partner_halo_score}<span class="score-cell-denom"> /10</span></div>
+        </div>
+        <div class="score-cell">
+          <div class="score-cell-label">Momentum Triggers</div>
+          <div class="score-cell-val">${r.momentum_triggers_count}<span class="score-cell-denom"> /${r.momentum_triggers_total}</span></div>
+        </div>
+        <div class="score-cell">
+          <div class="score-cell-label">Language Grade</div>
+          <div class="score-cell-val">${r.language_grade}</div>
+        </div>
+      </div>
+      <div class="sec-body">${r.catalyst_strength_note}</div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-title">§3 Red Flags <span style="font-weight:normal;color:var(--text2)">(${r.red_flag_count} flags · Multiplier ×${r.red_flag_multiplier})</span></div>
+      <ul class="flag-list">${flagsHtml}</ul>
+    </div>
+
+    <div class="sec">
+      <div class="sec-title">§6 Language Quality — Grade: ${r.language_grade}</div>
+      <div class="sec-body">${r.language_note}</div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-title">§7 Capital Raise Risk</div>
+      <div class="risk-badge risk-${riskKey(r.capital_raise_risk)}">${r.capital_raise_risk}</div>
+      <div class="sec-body">${r.capital_raise_note}</div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-title">§8 Momentum: ${r.momentum_triggers_count} / ${r.momentum_triggers_total} triggers</div>
+      <div class="sec-body">${r.momentum_note}</div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-title">§9 Score Calculation</div>
+      <table class="adj-table">
+        <tr><td>Base composite</td><td></td><td>${r.base_composite_score} / 100</td></tr>
+        ${adjHtml}
+      </table>
+      <div class="adj-total">
+        <span>Adjusted score</span>
+        <span class="${sc}">${r.adjusted_score} / 100</span>
+      </div>
+    </div>
+
+    ${phraseHtml ? `<div class="sec">
+      <div class="sec-title">Key Phrases Flagged</div>
+      <div>${phraseHtml}</div>
+    </div>` : ''}
+
+    <div class="sec">
+      <div class="sec-title">§10 Final Verdict</div>
+      <div class="sec-body">${r.final_note}</div>
+    </div>
+
+    ${traderHtml ? `<div class="sec">
+      <div class="sec-title">⚡ Trader Pre-Action Checklist</div>
+      <ol class="trader-list">${traderHtml}</ol>
+    </div>` : ''}
+
+    <div class="disclaimer">
+      Analysis powered by AI · Based on publicly available press release content fetched via web search · 
+      Not investment advice · All financial, technical, and timing decisions remain with the trader · 
+      Scores apply EP Catalyst Framework multipliers automatically
+    </div>
+
+  </div>`;
+}
+</script>
+</body>
+</html>
