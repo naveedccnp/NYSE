@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NYSE · Situational Awareness</title>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #10101a;
+    --bg3: #16161f;
+    --bg4: #1c1c28;
+    --border: #2a2a3a;
+    --border2: #3a3a50;
+    --text: #d0d0e0;
+    --text2: #8888aa;
+    --text3: #55556a;
+    --accent: #4a9eff;
+    --accent2: #1a3a6a;
+    --green: #2ecc71;
+    --green2: #0e3d22;
+    --green3: #1a5c32;
+    --red: #e74c3c;
+    --red2: #3d0e0e;
+    --red3: #5c1a1a;
+    --amber: #f0a500;
+    --amber2: #3d2800;
+    --cyan: #1abc9c;
+    --cyan2: #0a2e28;
+    --purple: #9b59b6;
+    --gray2: #1e1e2a;
+    --font-mono: 'Courier New', Courier, monospace;
+    --font-sans: 'Segoe UI', system-ui, sans-serif;
+  }
+  .light {
+    --bg: #f0f0ea; --bg2: #e8e8e0; --bg3: #ffffff; --bg4: #f8f8f2;
+    --border: #d0d0c0; --border2: #b0b0a0;
+    --text: #1a1a2e; --text2: #555565; --text3: #999988;
+    --accent: #1a5ecc; --accent2: #d0e0ff;
+    --green: #1a7c42; --green2: #d0f0e0; --green3: #a0e0c0;
+    --red: #cc2222; --red2: #ffe0e0; --red3: #ffb0b0;
+    --amber: #a06800; --amber2: #fff0c0;
+    --cyan: #0a8070; --cyan2: #d0f0ea;
+    --gray2: #ebebeb;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-mono); min-height: 100vh; }
+
+  /* NAV */
+  nav { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 0 1rem; display: flex; align-items: center; flex-wrap: wrap; position: sticky; top: 0; z-index: 200; }
+  .nav-brand { font-size: 13px; font-weight: bold; color: var(--accent); padding: 10px 12px 10px 0; border-right: 1px solid var(--border); margin-right: 4px; letter-spacing: 0.05em; text-decoration: none; white-space: nowrap; }
+  .nav-link { font-size: 12px; color: var(--text2); text-decoration: none; padding: 10px 10px; border-bottom: 2px solid transparent; transition: color 0.15s; white-space: nowrap; }
+  .nav-link:hover { color: var(--text); }
+  .nav-link.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .nav-spacer { flex: 1; }
+  .theme-btn { font-size: 11px; color: var(--text2); background: none; border: 1px solid var(--border); padding: 4px 10px; border-radius: 3px; cursor: pointer; font-family: var(--font-mono); }
+  .theme-btn:hover { color: var(--text); }
+
+  /* TOOLBAR */
+  .toolbar { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 8px 1rem; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .date-nav { display: flex; align-items: center; gap: 6px; }
+  .nav-arrow { background: none; border: 1px solid var(--border); color: var(--text2); padding: 5px 10px; border-radius: 3px; cursor: pointer; font-family: var(--font-mono); font-size: 13px; transition: all 0.15s; }
+  .nav-arrow:hover { border-color: var(--accent); color: var(--accent); }
+  .date-display { font-size: 14px; font-weight: bold; color: var(--text); letter-spacing: 0.03em; min-width: 160px; }
+  .today-btn { font-size: 11px; color: var(--accent); background: var(--accent2); border: 1px solid var(--accent); padding: 4px 10px; border-radius: 3px; cursor: pointer; font-family: var(--font-mono); }
+  .date-picker-btn { font-size: 11px; color: var(--text2); background: none; border: 1px solid var(--border); padding: 4px 8px; border-radius: 3px; cursor: pointer; font-family: var(--font-mono); }
+  #date-input { position: absolute; opacity: 0; pointer-events: none; }
+  .toolbar-spacer { flex: 1; }
+  .save-btn { background: var(--green3); border: 1px solid var(--green); color: var(--green); font-family: var(--font-mono); font-size: 12px; font-weight: bold; letter-spacing: 0.06em; padding: 6px 18px; border-radius: 3px; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 6px; }
+  .save-btn:hover { background: var(--green); color: var(--bg); }
+  .save-status { font-size: 11px; color: var(--text3); }
+  .has-data-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--cyan); margin-left: 4px; vertical-align: middle; }
+
+  /* MARKET CONDITION TABS */
+  .condition-bar { background: var(--bg3); border-bottom: 1px solid var(--border); padding: 8px 1rem; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .condition-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; margin-right: 4px; }
+  .cond-btn { font-size: 12px; font-weight: bold; letter-spacing: 0.04em; padding: 6px 16px; border-radius: 3px; border: 1px solid var(--border2); background: none; color: var(--text2); cursor: pointer; font-family: var(--font-mono); transition: all 0.15s; }
+  .cond-btn:hover { border-color: var(--text2); color: var(--text); }
+  .cond-btn.active-SB  { background: #0e3d22; border-color: var(--green); color: var(--green); }
+  .cond-btn.active-B   { background: #163a20; border-color: #5dbb7a; color: #5dbb7a; }
+  .cond-btn.active-CH  { background: #2a2a10; border-color: var(--amber); color: var(--amber); }
+  .cond-btn.active-SW  { background: #1a1a2a; border-color: var(--text2); color: var(--text); }
+  .cond-btn.active-BR  { background: #3d1a1a; border-color: #e08060; color: #e08060; }
+  .cond-btn.active-SBR { background: var(--red2); border-color: var(--red); color: var(--red); }
+
+  /* METRICS ROW */
+  .metrics-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; padding: 10px 1rem; background: var(--bg); border-bottom: 1px solid var(--border); }
+  .metric-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 3px; padding: 10px 12px; }
+  .metric-card.green-card { background: var(--green2); border-color: var(--green3); }
+  .metric-card.red-card   { background: var(--red2);   border-color: var(--red3);   }
+  .metric-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin-bottom: 4px; }
+  .metric-label .ml-sub { color: var(--text3); font-size: 9px; }
+  .metric-input { background: none; border: none; color: var(--text); font-family: var(--font-mono); font-size: 22px; font-weight: bold; width: 100%; outline: none; padding: 0; }
+  .metric-input::placeholder { color: var(--text3); }
+  .metric-input.green-val { color: var(--green); }
+  .metric-input.red-val   { color: var(--red); }
+  .metric-input.amber-val { color: var(--amber); }
+  .metric-sub { font-size: 10px; color: var(--text3); margin-top: 3px; }
+
+  /* MAIN GRID */
+  .main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px 1rem; }
+  @media (max-width: 700px) { .main-grid { grid-template-columns: 1fr; } }
+
+  .grid-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 3px; display: flex; flex-direction: column; }
+  .grid-card-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  .grid-card-title { font-size: 11px; font-weight: bold; color: var(--text2); display: flex; align-items: center; gap: 6px; }
+  .grid-card-title svg { opacity: 0.6; }
+  .filled-badge { font-size: 9px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.08em; padding: 2px 7px; border-radius: 2px; background: var(--cyan2); color: var(--cyan); border: 1px solid var(--cyan); }
+  .empty-badge  { font-size: 9px; color: var(--text3); }
+  .grid-textarea { background: none; border: none; color: var(--text); font-family: var(--font-sans); font-size: 13px; line-height: 1.6; padding: 10px 12px; resize: none; width: 100%; min-height: 90px; outline: none; flex: 1; }
+  .grid-textarea::placeholder { color: var(--text3); font-style: italic; }
+
+  /* PLAN OF ACTION — full width */
+  .plan-card { background: var(--bg2); border: 2px solid var(--accent2); border-radius: 4px; margin: 0 1rem 10px; }
+  .plan-card-header { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--border); }
+  .plan-title { font-size: 13px; font-weight: bold; color: var(--accent); }
+  .plan-textarea { background: none; border: none; color: var(--text); font-family: var(--font-sans); font-size: 13px; line-height: 1.7; padding: 12px 14px; resize: none; width: 100%; min-height: 80px; outline: none; }
+  .plan-textarea::placeholder { color: var(--text3); font-style: italic; }
+
+  /* CALENDAR PANEL */
+  .cal-section { margin: 0 1rem 10px; }
+  .cal-toggle { background: none; border: 1px solid var(--border); color: var(--text2); font-family: var(--font-mono); font-size: 11px; padding: 5px 12px; border-radius: 3px; cursor: pointer; margin-bottom: 8px; }
+  .cal-toggle:hover { color: var(--text); border-color: var(--border2); }
+  .cal-grid { display: none; background: var(--bg2); border: 1px solid var(--border); border-radius: 3px; padding: 12px; }
+  .cal-grid.open { display: block; }
+  .cal-month-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .cal-month-title { font-size: 13px; font-weight: bold; color: var(--text); }
+  .cal-month-nav { background: none; border: 1px solid var(--border); color: var(--text2); padding: 3px 8px; border-radius: 2px; cursor: pointer; font-family: var(--font-mono); font-size: 12px; }
+  .cal-days-header { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; margin-bottom: 4px; }
+  .cal-day-label { font-size: 10px; color: var(--text3); text-align: center; padding: 3px; text-transform: uppercase; letter-spacing: 0.06em; }
+  .cal-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+  .cal-day { min-height: 36px; border-radius: 2px; border: 1px solid transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; font-size: 12px; color: var(--text2); position: relative; transition: all 0.12s; }
+  .cal-day:hover { border-color: var(--accent); color: var(--text); }
+  .cal-day.today { border-color: var(--accent2); color: var(--accent); }
+  .cal-day.selected { background: var(--accent2); border-color: var(--accent); color: var(--accent); font-weight: bold; }
+  .cal-day.has-entry { background: var(--bg3); border-color: var(--border2); }
+  .cal-day.has-entry::after { content: ''; display: block; width: 5px; height: 5px; border-radius: 50%; background: var(--cyan); margin-top: 2px; }
+  .cal-day.empty { cursor: default; }
+  .cal-day .cond-dot { width: 8px; height: 8px; border-radius: 50%; position: absolute; top: 3px; right: 3px; }
+
+  /* HISTORY QUICK VIEW */
+  .history-list { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; max-height: 300px; overflow-y: auto; }
+  .history-item { background: var(--bg3); border: 1px solid var(--border); border-radius: 3px; padding: 8px 12px; cursor: pointer; transition: border-color 0.12s; display: flex; align-items: center; gap: 10px; }
+  .history-item:hover { border-color: var(--accent); }
+  .history-date { font-size: 11px; font-weight: bold; color: var(--accent); min-width: 90px; }
+  .history-cond { font-size: 10px; font-weight: bold; padding: 2px 7px; border-radius: 2px; }
+  .history-preview { font-size: 11px; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; font-family: var(--font-sans); }
+  .history-vix { font-size: 11px; color: var(--text3); min-width: 60px; text-align: right; }
+
+  /* FOOTER */
+  .page-footer { margin: 1rem; padding-top: 10px; border-top: 1px solid var(--border); font-size: 11px; color: var(--text3); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="https://naveedccnp.github.io/NYSE/index.html">NYSE / SA</a>
+  <a class="nav-link" href="https://naveedccnp.github.io/NYSE/index.html">🧭 MM</a>
+  <a class="nav-link" href="https://naveedccnp.github.io/NYSE/ntrt.html">⚡ NTRT</a>
+  <a class="nav-link" href="https://naveedccnp.github.io/NYSE/ep.html">🎯 EP</a>
+  <a class="nav-link active" href="#">📡 SA</a>
+  <a class="nav-link" href="https://naveedccnp.github.io/NYSE/ep-catalyst.html">🔬 EP·CAT</a>
+  <a class="nav-link" href="https://naveedccnp.github.io/NYSE/news.html">📰 News</a>
+  <div class="nav-spacer"></div>
+  <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">🌙 Dark</button>
+</nav>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <div class="date-nav">
+    <button class="nav-arrow" onclick="shiftDay(-1)">‹</button>
+    <div class="date-display" id="dateDisplay">—</div>
+    <button class="nav-arrow" onclick="shiftDay(1)">›</button>
+  </div>
+  <button class="today-btn" onclick="goToday()">Today</button>
+  <button class="date-picker-btn" onclick="document.getElementById('date-input').showPicker ? document.getElementById('date-input').showPicker() : document.getElementById('date-input').click()">📅 Pick</button>
+  <input type="date" id="date-input" onchange="goDate(this.value)" />
+  <div class="toolbar-spacer"></div>
+  <span class="save-status" id="saveStatus">—</span>
+  <button class="save-btn" onclick="saveEntry()">💾 Save Entry</button>
+</div>
+
+<!-- MARKET CONDITION SELECTOR -->
+<div class="condition-bar">
+  <span class="condition-label">Market:</span>
+  <button class="cond-btn" data-cond="SB"  onclick="setCondition('SB')">Strong Bullish</button>
+  <button class="cond-btn" data-cond="B"   onclick="setCondition('B')">Bullish</button>
+  <button class="cond-btn" data-cond="CH"  onclick="setCondition('CH')">Choppy</button>
+  <button class="cond-btn" data-cond="SW"  onclick="setCondition('SW')">Sideways</button>
+  <button class="cond-btn" data-cond="BR"  onclick="setCondition('BR')">Bearish</button>
+  <button class="cond-btn" data-cond="SBR" onclick="setCondition('SBR')">Strong Bearish</button>
+</div>
+
+<!-- METRICS ROW -->
+<div class="metrics-row">
+  <div class="metric-card">
+    <div class="metric-label">VIX <span class="ml-sub">Volatility Index</span></div>
+    <input class="metric-input" id="m-vix" type="text" placeholder="—" inputmode="decimal" />
+  </div>
+  <div class="metric-card">
+    <div class="metric-label">T2108 <span class="ml-sub">% above 40 DMA</span></div>
+    <input class="metric-input" id="m-t2108" type="text" placeholder="—" inputmode="decimal" />
+  </div>
+  <div class="metric-card green-card">
+    <div class="metric-label">4% UP</div>
+    <input class="metric-input green-val" id="m-up4" type="text" placeholder="—" inputmode="numeric" />
+  </div>
+  <div class="metric-card red-card">
+    <div class="metric-label">4% DOWN</div>
+    <input class="metric-input red-val" id="m-dn4" type="text" placeholder="—" inputmode="numeric" />
+  </div>
+  <div class="metric-card">
+    <div class="metric-label">25% UP</div>
+    <input class="metric-input amber-val" id="m-up25" type="text" placeholder="—" inputmode="numeric" />
+    <div class="metric-sub" id="m-up25-prev"></div>
+  </div>
+  <div class="metric-card green-card">
+    <div class="metric-label">20% BULLISH</div>
+    <input class="metric-input green-val" id="m-bull20" type="text" placeholder="—" inputmode="numeric" />
+  </div>
+  <div class="metric-card red-card">
+    <div class="metric-label">20% BEARISH</div>
+    <input class="metric-input red-val" id="m-bear20" type="text" placeholder="—" inputmode="numeric" />
+  </div>
+</div>
+
+<!-- TEXT PANELS GRID -->
+<div class="main-grid">
+
+  <div class="grid-card">
+    <div class="grid-card-header">
+      <span class="grid-card-title">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1" y="1" width="10" height="10" rx="1" stroke="currentColor" stroke-width="1.2"/><line x1="3" y1="4" x2="9" y2="4" stroke="currentColor" stroke-width="1"/><line x1="3" y1="6.5" x2="9" y2="6.5" stroke="currentColor" stroke-width="1"/><line x1="3" y1="9" x2="7" y2="9" stroke="currentColor" stroke-width="1"/></svg>
+        Indices
+      </span>
+      <span id="badge-indices" class="empty-badge">empty</span>
+    </div>
+    <textarea class="grid-textarea" id="f-indices" placeholder="How are major indices trading? Large / mid / small caps? Consolidation or trending?" oninput="updateBadge('indices',this.value)"></textarea>
+  </div>
+
+  <div class="grid-card">
+    <div class="grid-card-header">
+      <span class="grid-card-title">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1" y="1" width="4.5" height="4.5" rx="0.5" stroke="currentColor" stroke-width="1.2"/><rect x="6.5" y="1" width="4.5" height="4.5" rx="0.5" stroke="currentColor" stroke-width="1.2"/><rect x="1" y="6.5" width="4.5" height="4.5" rx="0.5" stroke="currentColor" stroke-width="1.2"/><rect x="6.5" y="6.5" width="4.5" height="4.5" rx="0.5" stroke="currentColor" stroke-width="1.2"/></svg>
+        Sectors
+      </span>
+      <span id="badge-sectors" class="empty-badge">empty</span>
+    </div>
+    <textarea class="grid-textarea" id="f-sectors" placeholder="Which sectors leading? Any laggards? Technology, Healthcare, Energy, Financials..." oninput="updateBadge('sectors',this.value)"></textarea>
+  </div>
+
+  <div class="grid-card">
+    <div class="grid-card-header">
+      <span class="grid-card-title">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><polygon points="6,1 11,10 1,10" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>
+        Magnificent 7
+      </span>
+      <span id="badge-mag7" class="empty-badge">empty</span>
+    </div>
+    <textarea class="grid-textarea" id="f-mag7" placeholder="AAPL, MSFT, NVDA, GOOG, AMZN, META, TSLA — who's leading, lagging, breaking out?" oninput="updateBadge('mag7',this.value)"></textarea>
+  </div>
+
+  <div class="grid-card">
+    <div class="grid-card-header">
+      <span class="grid-card-title">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><polyline points="1,9 4,4 7,7 10,2" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>
+        Market Monitor
+      </span>
+      <span id="badge-mm" class="empty-badge">empty</span>
+    </div>
+    <textarea class="grid-textarea" id="f-mm" placeholder="MM figures — 4% up stocks steady? Primary/secondary indicators green or red? Breadth?" oninput="updateBadge('mm',this.value)"></textarea>
+  </div>
+
+  <div class="grid-card">
+    <div class="grid-card-header">
+      <span class="grid-card-title">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1" y="2" width="10" height="8" rx="1" stroke="currentColor" stroke-width="1.2"/><line x1="1" y1="5" x2="11" y2="5" stroke="currentColor" stroke-width="1"/></svg>
+        20% Study
+      </span>
+      <span id="badge-study20" class="empty-badge">empty</span>
+    </div>
+    <textarea class="grid-textarea" id="f-study20" placeholder="What does the 20% study show? PLASTICS dominating? Breakouts working? Follow-through?" oninput="updateBadge('study20',this.value)"></textarea>
+  </div>
+
+  <div class="grid-card">
+    <div class="grid-card-header">
+      <span class="grid-card-title">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1.2"/><line x1="6" y1="3" x2="6" y2="6.5" stroke="currentColor" stroke-width="1.2"/><line x1="6" y1="6.5" x2="8.5" y2="8" stroke="currentColor" stroke-width="1.2"/></svg>
+        What Moved Yesterday
+      </span>
+      <span id="badge-moved" class="empty-badge">empty</span>
+    </div>
+    <textarea class="grid-textarea" id="f-moved" placeholder="Key movers from yesterday. Breakouts that followed through. Themes emerging." oninput="updateBadge('moved',this.value)"></textarea>
+  </div>
+
+</div>
+
+<!-- PLAN OF ACTION -->
+<div class="plan-card">
+  <div class="plan-card-header">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="#4a9eff" stroke-width="1.5"/><line x1="8" y1="4" x2="8" y2="8.5" stroke="#4a9eff" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="11" r="0.8" fill="#4a9eff"/></svg>
+    <span class="plan-title">Plan of Action</span>
+    <span id="badge-plan" class="empty-badge" style="margin-left:8px">empty</span>
+  </div>
+  <textarea class="plan-textarea" id="f-plan" rows="4"
+    placeholder="What is your plan for today? What scans will you run? Breakout strategy, sectors to watch, risk level..."
+    oninput="updateBadge('plan',this.value)"></textarea>
+</div>
+
+<!-- CALENDAR -->
+<div class="cal-section">
+  <button class="cal-toggle" onclick="toggleCal()" id="calToggleBtn">📅 Show Journal Calendar</button>
+  <div class="cal-grid" id="calGrid">
+    <div class="cal-month-header">
+      <button class="cal-month-nav" onclick="shiftMonth(-1)">‹</button>
+      <span class="cal-month-title" id="calMonthTitle">—</span>
+      <button class="cal-month-nav" onclick="shiftMonth(1)">›</button>
+    </div>
+    <div class="cal-days-header">
+      <div class="cal-day-label">Sun</div><div class="cal-day-label">Mon</div>
+      <div class="cal-day-label">Tue</div><div class="cal-day-label">Wed</div>
+      <div class="cal-day-label">Thu</div><div class="cal-day-label">Fri</div>
+      <div class="cal-day-label">Sat</div>
+    </div>
+    <div class="cal-days" id="calDays"></div>
+    <div class="history-list" id="historyList"></div>
+  </div>
+</div>
+
+<div class="page-footer">
+  <span>Situational Awareness Journal · <span id="entryCount">0</span> entries saved</span>
+  <span id="footerTs">—</span>
+</div>
+
+<script>
+// ── STATE ────────────────────────────────────────────────────────────────────
+const STORE_KEY = 'sa_journal_v1';
+let currentDate = todayStr();
+let calMonth = new Date();
+let dark = true;
+let entries = {};
+
+// ── HELPERS ──────────────────────────────────────────────────────────────────
+function todayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function fmtDisplay(ds) {
+  const d = new Date(ds + 'T12:00:00');
+  return d.toLocaleDateString('en-US', { weekday:'short', year:'numeric', month:'short', day:'numeric' });
+}
+function fmtShort(ds) {
+  const d = new Date(ds + 'T12:00:00');
+  return d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+}
+
+const COND_LABELS = { SB:'Strong Bullish', B:'Bullish', CH:'Choppy', SW:'Sideways', BR:'Bearish', SBR:'Strong Bearish' };
+const COND_COLORS = { SB:'#2ecc71', B:'#5dbb7a', CH:'#f0a500', SW:'#8888aa', BR:'#e08060', SBR:'#e74c3c' };
+
+// ── PERSISTENCE ───────────────────────────────────────────────────────────────
+function loadAll() {
+  try { entries = JSON.parse(localStorage.getItem(STORE_KEY) || '{}'); } catch(e) { entries = {}; }
+}
+function saveAll() { localStorage.setItem(STORE_KEY, JSON.stringify(entries)); }
+
+// ── READ / WRITE FORM ────────────────────────────────────────────────────────
+function readForm() {
+  return {
+    condition: document.querySelector('.cond-btn.active-SB, .cond-btn.active-B, .cond-btn.active-CH, .cond-btn.active-SW, .cond-btn.active-BR, .cond-btn.active-SBR')?.dataset?.cond || '',
+    vix: document.getElementById('m-vix').value,
+    t2108: document.getElementById('m-t2108').value,
+    up4: document.getElementById('m-up4').value,
+    dn4: document.getElementById('m-dn4').value,
+    up25: document.getElementById('m-up25').value,
+    bull20: document.getElementById('m-bull20').value,
+    bear20: document.getElementById('m-bear20').value,
+    indices: document.getElementById('f-indices').value,
+    sectors: document.getElementById('f-sectors').value,
+    mag7: document.getElementById('f-mag7').value,
+    mm: document.getElementById('f-mm').value,
+    study20: document.getElementById('f-study20').value,
+    moved: document.getElementById('f-moved').value,
+    plan: document.getElementById('f-plan').value,
+    savedAt: new Date().toISOString()
+  };
+}
+
+function populateForm(entry) {
+  if (!entry) { clearForm(); return; }
+  setConditionUI(entry.condition || '');
+  document.getElementById('m-vix').value    = entry.vix    || '';
+  document.getElementById('m-t2108').value  = entry.t2108  || '';
+  document.getElementById('m-up4').value    = entry.up4    || '';
+  document.getElementById('m-dn4').value    = entry.dn4    || '';
+  document.getElementById('m-up25').value   = entry.up25   || '';
+  document.getElementById('m-bull20').value = entry.bull20 || '';
+  document.getElementById('m-bear20').value = entry.bear20 || '';
+  document.getElementById('f-indices').value = entry.indices || '';
+  document.getElementById('f-sectors').value = entry.sectors || '';
+  document.getElementById('f-mag7').value    = entry.mag7    || '';
+  document.getElementById('f-mm').value      = entry.mm      || '';
+  document.getElementById('f-study20').value = entry.study20 || '';
+  document.getElementById('f-moved').value   = entry.moved   || '';
+  document.getElementById('f-plan').value    = entry.plan    || '';
+  ['indices','sectors','mag7','mm','study20','moved','plan'].forEach(k => {
+    updateBadge(k, document.getElementById('f-'+k).value);
+  });
+}
+
+function clearForm() {
+  setConditionUI('');
+  ['m-vix','m-t2108','m-up4','m-dn4','m-up25','m-bull20','m-bear20'].forEach(id => document.getElementById(id).value = '');
+  ['f-indices','f-sectors','f-mag7','f-mm','f-study20','f-moved','f-plan'].forEach(id => document.getElementById(id).value = '');
+  ['indices','sectors','mag7','mm','study20','moved','plan'].forEach(k => updateBadge(k, ''));
+}
+
+// ── NAVIGATION ───────────────────────────────────────────────────────────────
+function loadDate(ds) {
+  currentDate = ds;
+  document.getElementById('dateDisplay').textContent = fmtDisplay(ds);
+  document.getElementById('date-input').value = ds;
+  populateForm(entries[ds] || null);
+  const ts = entries[ds]?.savedAt;
+  document.getElementById('saveStatus').textContent = ts ? 'Last saved ' + new Date(ts).toLocaleTimeString() : '—';
+  renderCal();
+}
+function shiftDay(delta) {
+  const d = new Date(currentDate + 'T12:00:00');
+  d.setDate(d.getDate() + delta);
+  loadDate(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`);
+}
+function goToday() { loadDate(todayStr()); }
+function goDate(val) { if (val) loadDate(val); }
+
+// ── SAVE ─────────────────────────────────────────────────────────────────────
+function saveEntry() {
+  entries[currentDate] = readForm();
+  saveAll();
+  document.getElementById('saveStatus').textContent = 'Saved ' + new Date().toLocaleTimeString();
+  document.getElementById('entryCount').textContent = Object.keys(entries).length;
+  renderCal();
+  renderHistory();
+  // Flash button
+  const btn = document.querySelector('.save-btn');
+  btn.textContent = '✓ Saved';
+  btn.style.background = 'var(--green)';
+  btn.style.color = 'var(--bg)';
+  setTimeout(() => { btn.innerHTML = '💾 Save Entry'; btn.style.background = ''; btn.style.color = ''; }, 1500);
+}
+
+// ── CONDITION ────────────────────────────────────────────────────────────────
+function setCondition(c) {
+  setConditionUI(c);
+}
+function setConditionUI(c) {
+  document.querySelectorAll('.cond-btn').forEach(b => {
+    b.className = 'cond-btn';
+    if (b.dataset.cond === c) b.className = `cond-btn active-${c}`;
+  });
+}
+
+// ── BADGES ───────────────────────────────────────────────────────────────────
+function updateBadge(key, val) {
+  const el = document.getElementById('badge-' + key);
+  if (!el) return;
+  if (val && val.trim()) {
+    el.className = 'filled-badge';
+    el.textContent = 'Filled';
+  } else {
+    el.className = 'empty-badge';
+    el.textContent = 'empty';
+  }
+}
+
+// ── CALENDAR ─────────────────────────────────────────────────────────────────
+function toggleCal() {
+  const g = document.getElementById('calGrid');
+  const btn = document.getElementById('calToggleBtn');
+  g.classList.toggle('open');
+  btn.textContent = g.classList.contains('open') ? '📅 Hide Calendar' : '📅 Show Journal Calendar';
+  if (g.classList.contains('open')) { renderCal(); renderHistory(); }
+}
+
+function shiftMonth(d) {
+  calMonth.setMonth(calMonth.getMonth() + d);
+  renderCal();
+  renderHistory();
+}
+
+function renderCal() {
+  const yr = calMonth.getFullYear(), mo = calMonth.getMonth();
+  document.getElementById('calMonthTitle').textContent =
+    new Date(yr, mo, 1).toLocaleDateString('en-US', { month:'long', year:'numeric' });
+
+  const first = new Date(yr, mo, 1).getDay();
+  const days = new Date(yr, mo+1, 0).getDate();
+  const todayS = todayStr();
+  const container = document.getElementById('calDays');
+  container.innerHTML = '';
+
+  for (let i = 0; i < first; i++) {
+    const el = document.createElement('div');
+    el.className = 'cal-day empty';
+    container.appendChild(el);
+  }
+
+  for (let d = 1; d <= days; d++) {
+    const ds = `${yr}-${String(mo+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const el = document.createElement('div');
+    el.className = 'cal-day';
+    el.textContent = d;
+    if (ds === todayS) el.classList.add('today');
+    if (ds === currentDate) el.classList.add('selected');
+    if (entries[ds]) {
+      el.classList.add('has-entry');
+      const cond = entries[ds].condition;
+      if (cond) {
+        const dot = document.createElement('div');
+        dot.className = 'cond-dot';
+        dot.style.background = COND_COLORS[cond] || '#888';
+        el.appendChild(dot);
+      }
+    }
+    el.onclick = () => loadDate(ds);
+    container.appendChild(el);
+  }
+}
+
+function renderHistory() {
+  const list = document.getElementById('historyList');
+  list.innerHTML = '';
+  const sorted = Object.keys(entries).sort((a,b) => b.localeCompare(a)).slice(0, 20);
+  if (sorted.length === 0) {
+    list.innerHTML = '<div style="font-size:11px;color:var(--text3);padding:8px;">No entries yet — save your first entry above.</div>';
+    return;
+  }
+  sorted.forEach(ds => {
+    const e = entries[ds];
+    const item = document.createElement('div');
+    item.className = 'history-item';
+    const cond = e.condition || '';
+    const condColor = COND_COLORS[cond] || '#888';
+    const condLabel = COND_LABELS[cond] || '';
+    item.innerHTML = `
+      <span class="history-date">${fmtShort(ds)}</span>
+      ${cond ? `<span class="history-cond" style="background:${condColor}22;color:${condColor};border:1px solid ${condColor}44">${condLabel}</span>` : ''}
+      <span class="history-preview">${e.plan || e.indices || e.sectors || '—'}</span>
+      <span class="history-vix">${e.vix ? 'VIX '+e.vix : ''}</span>
+    `;
+    item.onclick = () => loadDate(ds);
+    list.appendChild(item);
+  });
+}
+
+// ── THEME ────────────────────────────────────────────────────────────────────
+function toggleTheme() {
+  dark = !dark;
+  document.body.classList.toggle('light', !dark);
+  document.getElementById('themeBtn').textContent = dark ? '🌙 Dark' : '☀️ Light';
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+loadAll();
+loadDate(todayStr());
+calMonth = new Date();
+document.getElementById('entryCount').textContent = Object.keys(entries).length;
+document.getElementById('footerTs').textContent = new Date().toLocaleString('en-US', { timeZoneName: 'short' });
+
+// Auto-save on blur of any field
+document.querySelectorAll('textarea, input.metric-input').forEach(el => {
+  el.addEventListener('blur', () => {
+    if (Object.values(readForm()).some(v => v && v.trim && v.trim())) {
+      entries[currentDate] = readForm();
+      saveAll();
+      document.getElementById('saveStatus').textContent = 'Auto-saved ' + new Date().toLocaleTimeString();
+    }
+  });
+});
+</script>
+</body>
+</html>
