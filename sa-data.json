@@ -10,13 +10,13 @@
       "bull20": "12",
       "bear20": "11",
       "indices": "test",
-      "sectors": "",
+      "sectors": "test",
       "mag7": "test",
-      "mm": "",
+      "mm": "1234",
       "study20": "test",
       "moved": "",
       "plan": "",
-      "savedAt": "2026-04-18T12:24:42.719Z"
+      "savedAt": "2026-04-18T12:25:01.425Z"
     }
   }
 }
