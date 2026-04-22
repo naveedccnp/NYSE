@@ -258,5 +258,14 @@
     "total_screened": 0,
     "pre_post_movers_count": 0,
     "candidates": []
+  },
+  {
+    "date": "2026-04-22",
+    "scanned_at": "2026-04-22T16:44:52.656527Z",
+    "market": "US",
+    "total_earnings": 0,
+    "total_screened": 0,
+    "pre_post_movers_count": 0,
+    "candidates": []
   }
 ]
