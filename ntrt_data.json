@@ -1,14 +1,5 @@
 [
   {
-    "date": "2026-06-05",
-    "scanned_at": "2026-06-05T22:43:51.412449Z",
-    "market": "US",
-    "total_earnings": 0,
-    "total_screened": 0,
-    "pre_post_movers_count": 0,
-    "candidates": []
-  },
-  {
     "date": "2026-06-08",
     "scanned_at": "2026-06-08T22:59:13.261195Z",
     "market": "US",
@@ -533,6 +524,15 @@
   {
     "date": "2026-08-27",
     "scanned_at": "2026-08-27T23:00:30.178934Z",
+    "market": "US",
+    "total_earnings": 0,
+    "total_screened": 0,
+    "pre_post_movers_count": 0,
+    "candidates": []
+  },
+  {
+    "date": "2026-08-28",
+    "scanned_at": "2026-08-28T05:34:47.751160Z",
     "market": "US",
     "total_earnings": 0,
     "total_screened": 0,
